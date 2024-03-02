@@ -31,10 +31,10 @@ export default async function decorate(block) {
     }
 
     // Create and append the blog description
-    if (item.description) {
+    if (item.title) {
       const desc = document.createElement('div');
       desc.className = 'blogs-blog-body';
-      desc.textContent = item.description;
+      desc.textContent = item.title;
       li.appendChild(desc);
     }
 
