@@ -24,10 +24,10 @@ export default function decorate(block) {
 
     // Wrap image and body in a link if blogUrl is not empty
     if (blogUrl) {
-      [...li.querySelectorAll('.blogs-blog-image, .blogs-blog-body')].forEach(div => {
+      [...li.querySelectorAll('.blogs-blog-image, .blogs-blog-body')].forEach((div) => {
         const wrapper = document.createElement('a');
         wrapper.setAttribute('href', blogUrl);
-        wrapper.classList.add(div.className + '-link'); // Add a class for styling if needed
+        wrapper.classList.add(div.className + '-link'.toString()); // Add a class for styling if needed
         div.parentNode.insertBefore(wrapper, div);
         wrapper.appendChild(div);
       });
