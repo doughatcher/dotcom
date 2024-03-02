@@ -1,41 +1,57 @@
 import { createOptimizedPicture } from '../../scripts/aem.js';
 
-export default function decorate(block) {
-  /* change to ul, li */
+export default async function decorate(block) {
+  // Fetch the data from `/query-index.json`
+  const response = await fetch('/query-index.json');
+  const { data } = await response.json();
+
+  // Create a <ul> element to hold the list of items
   const ul = document.createElement('ul');
-  [...block.children].forEach((row) => {
+
+  // Iterate over the `data` array and create <li> elements for each item
+  data.forEach((item) => {
     const li = document.createElement('li');
-    let blogUrl = ''; // Initialize a variable to store the blog URL
-    while (row.firstElementChild) {
-      const child = row.firstElementChild;
-      // Check if the child is a blog URL
-      if (child.children.length === 1 && child.querySelector('picture')) {
-        child.className = 'blogs-blog-image';
-      }
-      if (child.innerHTML.charAt(0) === '/') {
-        child.className = 'blogs-blog-url';
-        blogUrl = child.textContent; // Store the blog URL
-        child.style.display = 'none'; // Hide the blog URL element
-      } else {
-        child.className = 'blogs-blog-body';
-      }
-      li.append(child); // Append the child to the li element
+
+    // Create and append the blog image
+    if (item.image) {
+      const imgWrapper = document.createElement('div');
+      imgWrapper.className = 'blogs-blog-image';
+      const picture = createOptimizedPicture(item.image, item.title, false, [{ width: '750' }]);
+      imgWrapper.appendChild(picture);
+      li.appendChild(imgWrapper);
     }
 
-    // Wrap image and body in a link if blogUrl is not empty
-    if (blogUrl) {
-      [...li.querySelectorAll('.blogs-blog-image, .blogs-blog-body')].forEach((div) => {
-        const wrapper = document.createElement('a');
-        wrapper.setAttribute('href', blogUrl);
-        wrapper.classList.add(div.className + '-link'.toString()); // Add a class for styling if needed
-        div.parentNode.insertBefore(wrapper, div);
-        wrapper.appendChild(div);
-      });
+    // Create and append the blog URL as a hidden element (for consistency with original code)
+    if (item.path) {
+      const blogUrl = document.createElement('div');
+      blogUrl.className = 'blogs-blog-url';
+      blogUrl.textContent = item.path;
+      blogUrl.style.display = 'none'; // Hide the blog URL element
+      li.appendChild(blogUrl);
     }
-    ul.append(li);
+
+    // Create and append the blog description
+    if (item.description) {
+      const desc = document.createElement('div');
+      desc.className = 'blogs-blog-body';
+      desc.textContent = item.description;
+      li.appendChild(desc);
+    }
+
+    // Wrap image and body in a link
+    const wrapper = document.createElement('a');
+    wrapper.setAttribute('href', item.path);
+    wrapper.classList.add('blogs-blog-link'); // Add a class for styling
+    while (li.firstChild) {
+      wrapper.appendChild(li.firstChild); // Move all children under the wrapper
+    }
+    li.appendChild(wrapper); // Add the wrapper back to the li
+
+    // Append the <li> element to the <ul>
+    ul.appendChild(li);
   });
 
-  ul.querySelectorAll('img').forEach((img) => img.closest('picture').replaceWith(createOptimizedPicture(img.src, img.alt, false, [{ width: '750' }])));
+  // Clear the block and append the <ul>
   block.textContent = '';
   block.append(ul);
 }
