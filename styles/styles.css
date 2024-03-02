@@ -208,3 +208,23 @@ main .section.light,
 main .section.highlight {
   background-color: var(--light-color);
 }
+
+div.nav-tools a.button:any-link {
+  background-color: transparent;
+}
+
+div.nav-tools .default-content-wrapper { 
+  width: 100%;
+}
+
+p.button-container {
+
+  float: left;
+
+}
+
+@media (width <= 700px) {
+  div.nav-tools .default-content-wrapper .button-container:not(:last-child) { 
+    display: none;
+  }
+} 
