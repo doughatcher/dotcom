@@ -16,5 +16,5 @@ indices:
         select: head > meta[property="og:image"]
         value: match(attribute(el, "content"), "https://[^/]+(/.*)")
       description:
-        select: .default-content-wrapper
-        value: textContent(el).substring(0, 200)
+        select: head > meta[property="og:description"]
+        value: textContent(el)

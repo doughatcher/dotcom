@@ -17,10 +17,16 @@
 
 }
 
-.blog .blogs-blog-body a, strong, p, strong:hover, p:hover {
+.blog a:any-link  {
   color: black;
   text-decoration: none;
 }
+
+.blog a:hover  {
+  color: darkred;
+  text-decoration: none;
+}
+
 
 .blog .blogs-blog-image {
   line-height: 0;
