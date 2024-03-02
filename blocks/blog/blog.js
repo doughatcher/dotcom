@@ -48,7 +48,9 @@ export default async function decorate(block) {
     li.appendChild(wrapper); // Add the wrapper back to the li
 
     // Append the <li> element to the <ul>
-    ul.appendChild(li);
+    if (item.path !== '/') {
+      ul.appendChild(li);
+    }
   });
 
   // Clear the block and append the <ul>
