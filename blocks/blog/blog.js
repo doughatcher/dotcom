@@ -5,6 +5,8 @@ export default async function decorate(block) {
   const response = await fetch('/query-index.json');
   const { data } = await response.json();
 
+  data.reverse();
+
   // Create a <ul> element to hold the list of items
   const ul = document.createElement('ul');
 
