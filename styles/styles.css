@@ -226,3 +226,7 @@ p.button-container {
     display: none;
   }
 } 
+
+a:any-link {
+  color: darkred;
+}

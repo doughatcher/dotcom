@@ -12,9 +12,13 @@
   background-color: var(--background-color)
 }
 
-.blog .blogs-blog-body {
+.blog .blogs-blog-body, .blog .blogs-blog-title {
   margin: 16px;
 
+}
+
+.blog .blogs-blog-title {
+  font-weight: 800;
 }
 
 .blog a:any-link  {

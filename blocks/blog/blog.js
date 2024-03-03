@@ -32,11 +32,19 @@ export default async function decorate(block) {
 
     // Create and append the blog description
     if (item.title) {
+      const title = document.createElement('div');
+      title.className = 'blogs-blog-title';
+      title.textContent = item.title;
+      li.appendChild(title);
+    }
+
+    if (item.description) {
       const desc = document.createElement('div');
       desc.className = 'blogs-blog-body';
-      desc.textContent = item.title;
+      desc.textContent = item.description;
       li.appendChild(desc);
     }
+
 
     // Wrap image and body in a link
     const wrapper = document.createElement('a');
