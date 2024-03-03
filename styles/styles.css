@@ -122,8 +122,8 @@ main pre {
 
 /* links */
 a:any-link {
-  color: var(--link-color);
   text-decoration: none;
+  color: darkred;
 }
 
 a:hover {
@@ -226,7 +226,3 @@ p.button-container {
     display: none;
   }
 } 
-
-a:any-link {
-  color: darkred;
-}
