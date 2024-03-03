@@ -45,7 +45,6 @@ export default async function decorate(block) {
       li.appendChild(desc);
     }
 
-
     // Wrap image and body in a link
     const wrapper = document.createElement('a');
     wrapper.setAttribute('href', item.path);
