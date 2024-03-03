@@ -225,4 +225,18 @@ p.button-container {
   div.nav-tools .default-content-wrapper .button-container:not(:last-child) { 
     display: none;
   }
-} 
+
+
+  div.nav-hamburger {
+    display: none!important;
+    gap: 0;
+  }
+
+  nav#nav {
+    gap: 0;
+  }
+
+  a.button:any-link, button {
+    padding: 0;
+  }
+}
