@@ -2,9 +2,11 @@
 	"name": "doughatcher.com",
 	"image": "mcr.microsoft.com/devcontainers/base:jammy",
 	"features": {
-		"ghcr.io/devcontainers/features/node:1": {}
+		"ghcr.io/devcontainers/features/node:1": {},
+		"git": "os-provided",
+        "sshd": "latest"
 	},
 	"postCreateCommand": "make install",
-	"postStartCommand": "make dev",
-	"forwardPorts": [3000]
+	"postStartCommand": "make run",
+	"forwardPorts": [3000],
 }
