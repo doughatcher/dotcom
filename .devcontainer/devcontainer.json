@@ -6,7 +6,6 @@
 		"git": "os-provided",
         "sshd": "latest"
 	},
-	"postCreateCommand": "make install",
 	"postStartCommand": "make run",
-	"forwardPorts": [3000],
+	"forwardPorts": [3000]
 }

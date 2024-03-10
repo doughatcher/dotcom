@@ -6,7 +6,7 @@ help: ## Display this help screen
 install: ## installs dependancies
 	npm install
 
-run: ## run the aem instance (port 3000)
+run: install ## run the aem instance (port 3000)
 	npx aem up
 
 storybook: ## runs the storybook
