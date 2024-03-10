@@ -11,3 +11,6 @@ run: ## run the aem instance (port 3000)
 
 storybook: ## runs the storybook
 	npm run storybook
+
+lint: ## always lint before pushing!
+	npm run lint
