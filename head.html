@@ -1,53 +1,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <script src="/scripts/aem.js" type="module"></script>
 <script src="/scripts/scripts.js" type="module"></script>
+<script src="/scripts/disqus.js"></script>
 <link rel="stylesheet" href="/styles/styles.css"/>
 
-<!-- disqus support -->
-<script>
-if (window.location.pathname !== '/') {
-        
-    window.onload = function() {
-        // Create a new div element
-        var disqusDiv = document.createElement('div');
-
-        // Set the id of the new div
-        disqusDiv.id = 'disqus_thread';
-
-        // Find the first element with the class 'default-content-wrapper'
-        var contentWrapper = document.querySelector('.default-content-wrapper');
-
-        // Append the new div to the 'default-content-wrapper' div
-        if (contentWrapper) {
-            contentWrapper.appendChild(disqusDiv);
-        }
-
-            /**
-         *  RECOMMENDED CONFIGURATION VARIABLES: EDIT AND UNCOMMENT 
-         *  THE SECTION BELOW TO INSERT DYNAMIC VALUES FROM YOUR 
-         *  PLATFORM OR CMS.
-         *  
-         *  LEARN WHY DEFINING THESE VARIABLES IS IMPORTANT: 
-         *  https://disqus.com/admin/universalcode/#configuration-variables
-         */
-        
-        var disqus_config = function () {
-            // Replace PAGE_URL with your page's canonical URL variable
-            this.page.url = window.location.pathname;  
-            
-            // Replace PAGE_IDENTIFIER with your page's unique identifier variable
-            // this.page.identifier = PAGE_IDENTIFIER; 
-        };
-        
-        (function() {  // REQUIRED CONFIGURATION VARIABLE: EDIT THE SHORTNAME BELOW
-            var d = document, s = d.createElement('script');
-            
-            // IMPORTANT: Replace EXAMPLE with your forum shortname!
-            s.src = 'https://superterran.disqus.com/embed.js';
-            
-            s.setAttribute('data-timestamp', +new Date());
-            (d.head || d.body).appendChild(s);
-        })();
-    };
-}
-</script>
