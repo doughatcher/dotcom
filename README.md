@@ -1,5 +1,6 @@
-# Your Project's Title...
-Your project's description...
+# Doug Hatcher's Blog
+
+This is my AEM with Edge Delivery blog. It uses the [AEM Sidekick](https://apps.apple.com/us/app/aem-sidekick/) 
 
 ## Environments
 - Preview: https://main--dotcom--doughatcher.hlx.page/

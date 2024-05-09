@@ -49,7 +49,13 @@ export default async function decorate(block) {
 
     // Wrap image and body in a link
     const wrapper = document.createElement('a');
-    wrapper.setAttribute('href', item.path);
+
+    if (item['original-content']) {
+      wrapper.setAttribute('href', item['original-content']);
+    } else {
+      wrapper.setAttribute('href', item.path);
+    }
+
     wrapper.classList.add('blogs-blog-link'); // Add a class for styling
     while (li.firstChild) {
       wrapper.appendChild(li.firstChild); // Move all children under the wrapper
