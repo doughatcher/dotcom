@@ -7,9 +7,11 @@
     "lint:js": "eslint .",
     "lint:css": "stylelint blocks/**/*.css styles/*.css",
     "lint": "npm run lint:js && npm run lint:css",
-    "storybook": "storybook dev -p 6006",
-    "build-storybook": "storybook build",
-    "prepare": "husky"
+    "start:storybook": "storybook dev -p 6006",
+    "build:storybook": "storybook build",
+    "prepare": "husky",
+    "start:aem": "aem up",
+    "start": "concurrently \"npm run start:storybook\" \"npm run start:aem\""
   },
   "husky": {
     "hooks": {
@@ -38,6 +40,7 @@
     "@storybook/html-vite": "^7.6.17",
     "@storybook/test": "^7.6.17",
     "chai": "5.0.0",
+    "concurrently": "^8.2.2",
     "eslint": "8.56.0",
     "eslint-config-airbnb-base": "15.0.0",
     "eslint-plugin-import": "2.29.1",
@@ -50,6 +53,7 @@
     "stylelint-config-standard": "36.0.0"
   },
   "dependencies": {
-    "@adobe/aem-cli": "^16.2.8"
+    "@adobe/aem-cli": "^16.2.8",
+    "@adobe/aio-cli": "^10.1.0"
   }
 }

@@ -6,6 +6,7 @@
 		"git": "os-provided",
         "sshd": "latest"
 	},
-	"postStartCommand": "make run",
+	"postCreateCommand": "npm install --include=dev",
+	"postStartCommand": "npm run start",
 	"forwardPorts": [3000]
 }
