@@ -8,5 +8,7 @@
 	},
 	"postCreateCommand": "npm install --include=dev",
 	"postStartCommand": "npm run start",
-	"forwardPorts": [3000]
+	"forwardPorts": [3000, 6006 ]
+
+	
 }
