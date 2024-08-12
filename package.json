@@ -54,6 +54,7 @@
   },
   "dependencies": {
     "@adobe/aem-cli": "^16.2.8",
-    "@adobe/aio-cli": "^10.1.0"
+    "@adobe/aio-cli": "^10.1.0",
+    "@adobe/aio-cli-plugin-api-mesh": "^3.6.1"
   }
 }
