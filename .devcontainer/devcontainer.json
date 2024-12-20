@@ -1,14 +1,24 @@
 {
 	"name": "doughatcher.com",
-	"image": "mcr.microsoft.com/devcontainers/base:jammy",
+	"build": {
+		"dockerfile": "Dockerfile"
+	},
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {},
 		"git": "os-provided",
-        "sshd": "latest"
+		"sshd": "latest"
 	},
 	"postCreateCommand": "npm install --include=dev",
 	"postStartCommand": "npm run start",
-	"forwardPorts": [3000, 6006 ]
-
-	
+	"forwardPorts": [
+		3000,
+		6006
+	],
+	"mounts": [
+		"source=${localEnv:HOME}/.npm,target=/root/.npm,type=bind,consistency=cached"
+	],
+	"remoteEnv": {
+		"PODMAN_USERNS": "keep-id"
+	},
+	"containerUser": "vscode"
 }
