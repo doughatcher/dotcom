@@ -1,5 +1,7 @@
 FROM mcr.microsoft.com/devcontainers/base:jammy
 
-RUN apt-get update && apt-get install -y npm && npm install -g yarn && apt-get clean && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y curl \
+    && curl -fsSL https://deb.nodesource.com/setup_18.x | bash - \
+    && apt-get install -y nodejs
 
-RUN npm install -g @adobe/aio-cli @adobe/aem-cli @adobe/aio-cli-plugin-api-mesh
+RUN npm install -g @adobe/aem-cli @adobe/aio-cli @adobe/aio-cli-plugin-api-mesh

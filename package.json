@@ -51,10 +51,5 @@
     "storybook": "^7.6.17",
     "stylelint": "16.1.0",
     "stylelint-config-standard": "36.0.0"
-  },
-  "dependencies": {
-    "@adobe/aem-cli": "^16.2.8",
-    "@adobe/aio-cli": "^10.1.0",
-    "@adobe/aio-cli-plugin-api-mesh": "^3.6.1"
   }
 }
