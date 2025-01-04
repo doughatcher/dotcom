@@ -18,4 +18,13 @@ export default async function decorate(block) {
   while (fragment.firstElementChild) footer.append(fragment.firstElementChild);
 
   block.append(footer);
+
+  const newsletterWrapper = document.querySelector('.footer.block');
+  if (newsletterWrapper) {
+    const script = document.createElement('script');
+    script.async = true;
+    script.src = 'https://eocampaign1.com/form/6ec217ee-cae9-11ef-b651-8b8cd4515de1.js';
+    script.setAttribute('data-form', '6ec217ee-cae9-11ef-b651-8b8cd4515de1');
+    newsletterWrapper.appendChild(script);
+  }
 }

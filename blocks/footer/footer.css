@@ -12,3 +12,17 @@ footer .footer {
 footer .footer p {
   margin: 0;
 }
+
+.inline-container {
+  float: right;
+  top: -55px;
+
+  .mastfoot {
+    display: none!important;
+  }
+
+  input.btn {
+    color: blue;
+  }
+}
+
