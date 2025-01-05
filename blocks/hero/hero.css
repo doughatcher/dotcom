@@ -1,5 +1,5 @@
 main .hero-container > div {
-  max-width: unset;
+  max-width: 100%;
 }
   
 main .hero-container {
@@ -8,15 +8,21 @@ main .hero-container {
 
 .hero {
   position: relative;
-  padding: 32px;
-  min-height: 300px;
+  padding: 0 32px;
+  min-height: 400px;
+  background: linear-gradient(to bottom, color-mix(in srgb, white 0%, transparent 20%), white 100%);
+
 }
 
 .hero h1 {
   max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
-  color: white;
+  color: black;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
 }
 
 .hero picture {
@@ -25,6 +31,7 @@ main .hero-container {
   inset: 0;
   object-fit: cover;
   box-sizing: border-box;
+
 }
 
 .hero img {
@@ -36,4 +43,8 @@ main .hero-container {
 .hero h3 {
   font-weight: 100;
   font-size: 18pt;
+}
+
+main div.default-content-wrapper {
+    margin-top: -90px;
 }
