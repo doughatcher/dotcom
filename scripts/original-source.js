@@ -5,8 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const linkElement = document.createElement('a');
     linkElement.href = url;
     linkElement.target = '_blank';
-    linkElement.classList.add('btn');
-    linkElement.textContent = 'Read More...';
+    linkElement.classList.add('button');
+    linkElement.textContent = 'Read the article';
     document.querySelector('.default-content-wrapper').appendChild(linkElement);
   }
 });
