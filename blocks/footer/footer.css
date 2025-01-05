@@ -13,16 +13,26 @@ footer .footer p {
   margin: 0;
 }
 
-.inline-container {
-  float: right;
-  top: -55px;
-
-  .mastfoot {
-    display: none!important;
-  }
-
-  input.btn {
-    color: blue;
+@media (width >= 940px) {
+  .inline-container {
+    float: right;
+    top: -55px;
+  
+    .mastfoot {
+      display: none!important;
+    }
+  
+    input.btn {
+      color: blue;
+    }
   }
 }
-
+  
+@media (width < 900px) { 
+  .inline-container {
+    display: block;
+    position: relative;
+    clear: both;
+    margin-top: 40px;
+  }  
+}
