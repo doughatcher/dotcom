@@ -11,8 +11,13 @@ export default async function decorate(block) {
   const ul = document.createElement('ul');
 
   // Iterate over the `data` array and create <li> elements for each item
-  data.forEach((item) => {
+  data.forEach((item, index) => {
     const li = document.createElement('li');
+
+    // Add a special class for the first item to make it a hero card
+    if (index === 0) {
+      li.classList.add('hero-card');
+    }
 
     // Create and append the blog image
     if (item.image) {
