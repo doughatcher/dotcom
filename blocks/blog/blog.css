@@ -51,21 +51,47 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
 }
 
 .hero-card .blogs-blog-image {
   width: 100%;
-  max-height: 350px; /* Set your desired max height */
+  max-height: 400px; /* Set your desired max height */
   overflow: hidden;
 }
 
 .hero-card .blogs-blog-image img {
   width: 100%;
   height: 100%;
-  object-fit: cover /* Ensures the image covers the container while maintaining aspect ratio */
+
 }
 
 .hero-card .blogs-blog-title,
 .hero-card .blogs-blog-body {
   text-align: center;
+}
+
+/* Media query for desktop layout */
+@media (width >= 900px) {
+  .hero-card {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+
+  .hero-card .blogs-blog-image {
+    width: 100%;
+    max-height: 400px; 
+    object-fit: cover;  
+
+  }
+
+  .hero-card .blogs-blog-content {
+    width: 50%;
+    padding: 20px;
+  }
+
+  .hero-card .blogs-blog-title,
+  .hero-card .blogs-blog-body {
+    text-align: left;
+  }
 }
