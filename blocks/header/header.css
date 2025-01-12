@@ -12,7 +12,8 @@ main .hero-container {
   position: relative;
   padding: 0 32px;
   min-height: 550px;
-  background: linear-gradient(to bottom, color-mix(in srgb, white 0%, transparent 10%), white 100%);
+  background: linear-gradient(to bottom, color-mix(in srgb, white 0%, transparent 60%), white 95%);
+  
 
 }
 
@@ -33,6 +34,7 @@ main .hero-container {
   inset: 0;
   object-fit: cover;
   box-sizing: border-box;
+  bottom: 1px;
 
 }
 
