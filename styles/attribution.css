@@ -18,3 +18,9 @@
         }
     }
 }
+
+@media (width <= 900px) { 
+    .author, .updated, .original-source {
+        margin: 0 25px 0 -15px;
+    }
+}
