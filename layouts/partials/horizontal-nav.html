@@ -1,4 +1,4 @@
-{{ if .Site.Params.show_navigation }}
+{{ if and .Site.Params.show_navigation .Site.Params.show_floating_nav }}
 <nav class="horizontal-nav">
     <ul class="nav-menu">
         {{ $currentPage := . }}
