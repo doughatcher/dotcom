@@ -3,3 +3,4 @@ public/
 data/
 content/
 .DS_Store
+.env
