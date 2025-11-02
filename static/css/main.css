@@ -1137,9 +1137,11 @@ a:hover {
   
   /* Move controls to integrate with header on mobile */
   .site-controls {
+    position: fixed;
     bottom: auto;
-    top: 1.25rem;
+    /* top: 1rem; */
     right: 1rem;
+    z-index: 1000;
   }
   
   .dark-mode-toggle {
@@ -1375,8 +1377,10 @@ a:hover {
   }
   
   .site-controls {
+    position: fixed;
     top: 0.75rem;
     right: 0.75rem;
+    z-index: 1000;
   }
   
   .main-content {
