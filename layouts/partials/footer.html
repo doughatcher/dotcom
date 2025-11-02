@@ -62,5 +62,12 @@
             </div>
             {{ end }}
         </div>
+        
+        <!-- Publications for mobile - Only visible on mobile -->
+        {{ if .Site.Params.show_publications_sidebar }}
+        <div class="mobile-publications">
+            {{ partial "publications-sidebar.html" . }}
+        </div>
+        {{ end }}
     </div>
 </footer>

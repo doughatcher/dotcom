@@ -847,8 +847,9 @@ a:hover {
   text-align: center;
 }
 
-/* Hide mobile profile on desktop */
-.mobile-profile {
+/* Hide mobile profile and mobile publications on desktop */
+.mobile-profile,
+.mobile-publications {
   display: none;
 }
 
@@ -1028,6 +1029,22 @@ a:hover {
     margin-bottom: 1.5rem;
     padding-top: 1.5rem;
     border-top: 1px solid hsl(var(--border));
+  }
+  
+  /* Hide publications in sidebar on mobile */
+  .sidebar .publications-sidebar {
+    display: none !important;
+  }
+  
+  /* Show publications in footer on mobile */
+  .site-footer .mobile-publications {
+    display: block !important;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid hsl(var(--border) / 0.3);
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
   }
   
   .site-footer .profile-avatar {
