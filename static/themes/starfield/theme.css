@@ -1,0 +1,159 @@
+/* Starfield Dreams Theme */
+
+/* Starfield canvas background */
+body {
+  position: relative;
+  background: #000000;
+  overflow-x: hidden;
+}
+
+#starfield-canvas {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Ensure all content is above the starfield */
+.site-container,
+.sidebar,
+.main-content,
+aside,
+.site-sidebar {
+  position: relative;
+  z-index: 1;
+}
+
+/* Glass morphism for sidebar */
+.sidebar,
+aside,
+.site-sidebar {
+  background: rgba(20, 20, 40, 0.7) !important;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Enhance text contrast on glass */
+.sidebar *,
+aside *,
+.site-sidebar * {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+/* Glass effect for main content area */
+.content,
+main,
+.site-content {
+  background: rgba(10, 10, 20, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+/* Enhance cards/posts with subtle glass effect */
+article,
+.post,
+.h-entry {
+  background: rgba(30, 30, 50, 0.5) !important;
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 16px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* Adjust link colors for dark theme */
+a {
+  color: #88ccff;
+}
+
+a:hover {
+  color: #aaddff;
+}
+
+/* Enhance heading visibility */
+h1, h2, h3, h4, h5, h6 {
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* Body text color adjustment */
+body,
+p,
+li,
+span {
+  color: #e0e0e0;
+}
+
+/* Code blocks with subtle glow */
+pre,
+code {
+  background: rgba(10, 10, 30, 0.8);
+  border: 1px solid rgba(100, 100, 255, 0.2);
+  box-shadow: 0 0 10px rgba(100, 100, 255, 0.1);
+}
+
+/* Navigation items with glass effect */
+nav,
+.navigation {
+  background: rgba(20, 20, 40, 0.6);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Buttons and interactive elements */
+button,
+.btn,
+input[type="submit"] {
+  background: rgba(80, 80, 160, 0.6);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  transition: all 0.3s ease;
+}
+
+button:hover,
+.btn:hover,
+input[type="submit"]:hover {
+  background: rgba(100, 100, 180, 0.8);
+  box-shadow: 0 0 15px rgba(100, 100, 255, 0.3);
+}
+
+/* Input fields with glass effect */
+input,
+textarea,
+select {
+  background: rgba(20, 20, 40, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Footer with glass effect */
+footer,
+.site-footer {
+  background: rgba(15, 15, 30, 0.8) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Ensure html and body extend properly for starfield */
+html,
+body {
+  min-height: 100%;
+  background: #000000 !important;
+}

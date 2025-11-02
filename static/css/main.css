@@ -884,6 +884,7 @@ a:hover {
   padding: 3rem 0;
   margin-top: 4rem;
   text-align: center;
+  display: none; /* Hidden on desktop, shown on mobile */
 }
 
 /* Hide mobile profile, mobile publications, and mobile header on desktop */
@@ -895,10 +896,6 @@ a:hover {
 
 /* Dark Mode Toggle */
 .dark-mode-toggle {
-  position: fixed;
-  bottom: 2rem;
-  right: 2rem;
-  z-index: 1000;
   background: hsl(var(--muted) / 0.2);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
@@ -1138,20 +1135,28 @@ a:hover {
     font-size: 0.8125rem;
   }
   
-  /* Move dark mode toggle to integrate with header on mobile */
-  .dark-mode-toggle {
+  /* Move controls to integrate with header on mobile */
+  .site-controls {
     bottom: auto;
     top: 1.25rem;
     right: 1rem;
+  }
+  
+  .dark-mode-toggle {
     background: hsl(var(--background));
     border: 1px solid hsl(var(--border) / 0.5);
     box-shadow: 0 2px 8px hsl(var(--foreground) / 0.1);
-    z-index: 1001;
   }
   
   .dark-mode-toggle:hover {
     border-color: hsl(var(--primary) / 0.5);
     box-shadow: 0 2px 12px hsl(var(--primary) / 0.2);
+  }
+  
+  .theme-select {
+    background: hsl(var(--background));
+    border: 1px solid hsl(var(--border) / 0.5);
+    box-shadow: 0 2px 8px hsl(var(--foreground) / 0.1);
   }
   
   .main-content {
@@ -1184,6 +1189,7 @@ a:hover {
   
   /* Show avatar and social links in footer on mobile */
   .site-footer {
+    display: block !important; /* Show footer on mobile */
     padding: 1.5rem 1rem;
     margin-top: 0;
   }
@@ -1368,7 +1374,7 @@ a:hover {
     font-size: 0.75rem;
   }
   
-  .dark-mode-toggle {
+  .site-controls {
     top: 0.75rem;
     right: 0.75rem;
   }

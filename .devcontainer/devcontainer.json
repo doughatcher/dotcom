@@ -11,6 +11,6 @@
 			"nvmVersion": "latest"
 		}
 	},
-	"postAttachCommand": "hugo serve",
+	"postAttachCommand": "hugo serve --disableFastRender",
 	"forwardPorts": [1313]
 }

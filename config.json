@@ -156,6 +156,10 @@
         "include_conversation": true,
         "years": [
             "2025"
-        ]
+        ],
+        "themes": {
+            "enabled": true,
+            "default": "starfield"
+        }
     }
 }
