@@ -11,8 +11,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const navHeight = document.querySelector('.horizontal-nav')?.offsetHeight || 0;
         const availableHeight = viewportHeight - navHeight - 120; // Account for padding
         
-        // If content is taller than 70% of available space, disable centering
-        if (contentHeight > availableHeight * 0.7) {
+        // Only disable centering if content actually overflows the available space
+        if (contentHeight > availableHeight) {
             contentWrapper.classList.add('large-content');
         } else {
             contentWrapper.classList.remove('large-content');
