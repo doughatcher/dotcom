@@ -1,4 +1,16 @@
 <aside class="sidebar">
+    <!-- Mobile Header - Only visible on mobile -->
+    <div class="mobile-header">
+        {{ if .Site.Params.avatar }}
+        <a href="{{ "/" | relURL }}" class="mobile-header-avatar">
+            <img src="{{ .Site.Params.avatar }}" alt="{{ .Site.Title }}">
+        </a>
+        {{ end }}
+        <h1 class="mobile-site-title">
+            <a href="{{ "/" | relURL }}">{{ .Site.Title }}</a>
+        </h1>
+    </div>
+    
     <div class="sidebar-content">
         <!-- Profile Section -->
         <div class="profile-section">
