@@ -10,12 +10,6 @@
         }
     },
     "outputFormats": {
-        "RSS": {
-            "baseName": "feed"
-        },
-        "JSON": {
-            "baseName": "feed"
-        },
         "RSD": {
             "mediaType": "application/xml",
             "baseName": "rsd",
@@ -159,7 +153,7 @@
         ],
         "themes": {
             "enabled": true,
-            "default": "starfield"
+            "default": "default"
         }
     }
 }
