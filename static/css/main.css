@@ -1129,7 +1129,7 @@ a:hover {
 
 .microblog_post {
   margin-bottom: 1.5rem;
-  padding: 1rem;
+  padding: 1.5rem 2rem;
   border: 1px solid hsl(var(--border) / 0.3);
   border-radius: 0.5rem;
   background: hsl(var(--card));
@@ -1138,6 +1138,7 @@ a:hover {
 .microblog_user {
   font-weight: 600;
   margin-bottom: 0.5rem;
+  color: hsl(var(--foreground) / 0.8);
 }
 
 .microblog_user img {
@@ -1161,6 +1162,7 @@ a:hover {
 
 .microblog_text {
   margin: 0.5rem 0;
+  color: hsl(var(--muted-foreground));
 }
 
 .microblog_text img {
@@ -1177,6 +1179,10 @@ a:hover {
 
 .microblog_time a:hover {
   color: hsl(var(--foreground));
+}
+
+.microblog_reply_signin {
+  color: hsl(var(--muted-foreground)) !important;
 }
 
 /* Pagination */
