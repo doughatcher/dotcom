@@ -35,12 +35,10 @@
 
   <!-- Reply/Interaction Buttons -->
   <ul class="reply-buttons">
-  <li><a class="conversation-on-mb" href="https://micro.blog/conversation?url={{ .Permalink }}">View on Micro.blog</a></li>
-  <li><a class="reply-by-email" href="mailto:{{ .Site.Params.email }}?subject=Re: {{ .Title | default .Summary }}">Reply by Email</a></li>
-  {{ if .Params.mastodon }}
-  <li><a class="reply-on-mastodon" href="https://mastodon.social/@{{ .Params.mastodon.username }}/{{ .Params.mastodon.id }}" target="_blank">Reply on Mastodon</a></li>
-  {{ end }}
-</ul>
+    {{ if .Params.mastodon }}
+    <li><a class="reply-on-mastodon" href="https://mastodon.social/@{{ .Params.mastodon.username }}/{{ .Params.mastodon.id }}" target="_blank">Reply on Mastodon</a></li>
+    {{ end }}
+  </ul>
 
 <!-- Syndication Links (hidden for microformats, visible if you want to show them) -->
 {{ if or .Params.mastodon .Params.bluesky .Params.threads .Params.linkedin }}
