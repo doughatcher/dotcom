@@ -25,7 +25,12 @@
     {{ end }}
     
     <!-- CSS -->
-    <link rel="stylesheet" href="{{ "css/main.css" | relURL }}">
+    {{ $css := resources.Get "css/main.css" }}
+    {{ if $css }}
+    <link rel="stylesheet" href="{{ $css.RelPermalink }}">
+    {{ else }}
+    <link rel="stylesheet" href="{{ "css/main.css" | relURL }}?v={{ now.Unix }}">
+    {{ end }}
     
     <!-- JavaScript -->
     <script src="{{ "js/responsive-content.js" | relURL }}" defer></script>
