@@ -1,0 +1,65 @@
+{{- $url := .url -}}
+{{- $cached := dict -}}
+
+{{- with getJSON $url -}}
+  {{- $title := "" -}}
+  {{- $description := "" -}}
+  {{- $image := "" -}}
+  {{- $siteName := "" -}}
+  
+  {{- /* Try to extract Open Graph data from the URL */ -}}
+  {{- with resources.GetRemote $url -}}
+    {{- if .Err -}}
+      {{- /* Fallback to simple link if fetching fails */ -}}
+      <a href="{{ $url }}" class="link-preview-fallback" target="_blank" rel="noopener">{{ $url }}</a>
+    {{- else -}}
+      {{- $content := .Content | string -}}
+      
+      {{- /* Extract meta tags using regex patterns */ -}}
+      {{- $ogTitle := findRE `<meta[^>]*property="og:title"[^>]*content="([^"]*)"` $content 1 -}}
+      {{- $ogDesc := findRE `<meta[^>]*property="og:description"[^>]*content="([^"]*)"` $content 1 -}}
+      {{- $ogImage := findRE `<meta[^>]*property="og:image"[^>]*content="([^"]*)"` $content 1 -}}
+      {{- $ogSite := findRE `<meta[^>]*property="og:site_name"[^>]*content="([^"]*)"` $content 1 -}}
+      
+      {{- /* Fallback to regular meta tags */ -}}
+      {{- if not $ogTitle -}}
+        {{- $ogTitle = findRE `<title>([^<]*)</title>` $content 1 -}}
+      {{- end -}}
+      {{- if not $ogDesc -}}
+        {{- $ogDesc = findRE `<meta[^>]*name="description"[^>]*content="([^"]*)"` $content 1 -}}
+      {{- end -}}
+      
+      {{- /* Extract the actual values from the matches */ -}}
+      {{- with $ogTitle -}}
+        {{- $title = index . 0 | replaceRE `.*content="([^"]*)".*` "$1" -}}
+        {{- $title = $title | replaceRE `<title>([^<]*)</title>` "$1" -}}
+      {{- end -}}
+      {{- with $ogDesc -}}
+        {{- $description = index . 0 | replaceRE `.*content="([^"]*)".*` "$1" -}}
+      {{- end -}}
+      {{- with $ogImage -}}
+        {{- $image = index . 0 | replaceRE `.*content="([^"]*)".*` "$1" -}}
+      {{- end -}}
+      {{- with $ogSite -}}
+        {{- $siteName = index . 0 | replaceRE `.*content="([^"]*)".*` "$1" -}}
+      {{- end -}}
+      
+      <a href="{{ $url }}" class="link-preview-card" target="_blank" rel="noopener">
+        {{- if $image -}}
+        <div class="link-preview-image">
+          <img src="{{ $image }}" alt="{{ $title }}" loading="lazy">
+        </div>
+        {{- end -}}
+        <div class="link-preview-content">
+          {{- if $title -}}
+          <div class="link-preview-title">{{ $title | htmlUnescape }}</div>
+          {{- end -}}
+          {{- if $description -}}
+          <div class="link-preview-description">{{ $description | htmlUnescape | truncate 150 }}</div>
+          {{- end -}}
+          <div class="link-preview-url">{{ $url | replaceRE `https?://([^/]+).*` "$1" }}</div>
+        </div>
+      </a>
+    {{- end -}}
+  {{- end -}}
+{{- end -}}

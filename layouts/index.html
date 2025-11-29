@@ -82,5 +82,10 @@
         {{ end }}
     </nav>
     {{ end }}
+    
+    <div class="feed-links">
+        <a href="{{ "feed.xml" | absURL }}">RSS</a> • 
+        <a href="{{ "index.json" | absURL }}">JSON Feed</a>
+    </div>
 </div>
 {{ end }}
