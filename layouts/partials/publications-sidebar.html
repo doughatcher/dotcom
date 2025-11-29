@@ -20,7 +20,7 @@
             
             {{ if $thumbnail }}
             <div class="publication-sidebar-thumbnail">
-                <a href="{{ .Permalink }}">
+                <a href="{{ .RelPermalink }}">
                     <img src="{{ $thumbnail }}" alt="{{ .Title }}" loading="lazy">
                 </a>
             </div>
@@ -28,7 +28,7 @@
             
             <div class="publication-sidebar-content">
                 <h4 class="publication-sidebar-title">
-                    <a href="{{ .Permalink }}">{{ .Title }}</a>
+                    <a href="{{ .RelPermalink }}">{{ .Title }}</a>
                 </h4>
                 {{ if .Date }}
                 <time class="publication-sidebar-date" datetime="{{ .Date.Format "2006-01-02" }}">

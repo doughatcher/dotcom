@@ -89,8 +89,8 @@
   // Find all standalone links in post bodies and convert to preview cards
   async function enhanceLinks() {
     console.log('Enhancing links...');
-    const postBodies = document.querySelectorAll('.post-body');
-    console.log('Found', postBodies.length, 'post bodies');
+    const postBodies = document.querySelectorAll('.post-body, .post-content');
+    console.log('Found', postBodies.length, 'post bodies/content areas');
     
     let linkCount = 0;
     

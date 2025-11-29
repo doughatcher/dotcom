@@ -13,7 +13,7 @@
         <div class="post-content">
             {{ if and (not .Params.microblog) .Title }}
             <h2 class="post-title">
-                <a href="{{ .Permalink }}">{{ .Title }}</a>
+                <a href="{{ .RelPermalink }}">{{ .Title }}</a>
             </h2>
             {{ end }}
             
@@ -21,7 +21,7 @@
                 {{ if .Summary }}
                     {{ .Summary }}
                     {{ if .Truncated }}
-                    <p><a href="{{ .Permalink }}" class="read-more">Continue reading →</a></p>
+                    <p><a href="{{ .RelPermalink }}" class="read-more">Continue reading →</a></p>
                     {{ end }}
                 {{ else }}
                     {{ .Content }}
@@ -30,7 +30,7 @@
             
             <div class="post-meta">
                 <time datetime="{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}">
-                    <a href="{{ .Permalink }}">{{ .Date.Format "Jan 2, 2006" }}</a>
+                    <a href="{{ .RelPermalink }}">{{ .Date.Format "Jan 2, 2006" }}</a>
                 </time>
                 
                 {{ if and (not .Params.microblog) .Site.Params.show_word_count }}

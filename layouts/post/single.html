@@ -1,39 +1,40 @@
 {{ define "main" }}
-<div class="post h-entry">
+<div class="single-post-container">
+  <article class="post h-entry single-post-card">
 
-  <header class="post-header">
-	{{ if .Title }}
-	  	<h1 class="p-name">{{ .Title }}</h1>
+    <header class="post-header">
+  	{{ if .Title }}
+  	  	<h1 class="p-name single-post-title">{{ .Title }}</h1>
+    	{{ end }}
+      <p class="post-meta">
+  	<a href="{{ .Permalink }}" class="u-url"><span class="post-meta"><time class="dt-published" datetime="{{ .Date.Format "2006-01-02 15:04:05 -0700" }}">{{ .Date.Format "Jan 2, 2006" }}</time></span></a>
+  	{{ with .Params.audio }}
+  	  <script type="text/javascript" src="https://micro.blog/narration.js?url={{ . }}"></script>
+  	{{ end }}	    
+  	{{ if .Params.author }}
+  	    by {{ .Params.author.name }}
   	{{ end }}
-    <p class="post-meta">
-	<a href="{{ .Permalink }}" class="u-url"><span class="post-meta"><time class="dt-published" datetime="{{ .Date.Format "2006-01-02 15:04:05 -0700" }}">{{ .Date.Format "Jan 2, 2006" }}</time></span></a>
-	{{ with .Params.audio }}
-	  <script type="text/javascript" src="https://micro.blog/narration.js?url={{ . }}"></script>
-	{{ end }}	    
-	{{ if .Params.author }}
-	    by {{ .Params.author.name }}
-	{{ end }}
-	</p>
-  </header>
+  	</p>
+    </header>
 
-  <article class="post-content e-content">
-	{{ .Content }}
+    <div class="post-content e-content">
+  	{{ .Content }}
+    </div>
+
+    {{- if .Params.categories }}
+    {{- with .GetTerms "categories" }}
+      <ul class="post-tags">
+        {{- range . }}
+          <li><a href="{{ .RelPermalink }}" class="tag">{{ .LinkTitle }}</a></li>
+        {{ end }}
+      </ul>
+    {{ end }}
+    {{ end }}
+
   </article>
 
-  {{- if .Params.categories }}
-  {{- with .GetTerms "categories" }}
-    <ul class="post-tags">
-      {{- range . }}
-        <li><a href="{{ .RelPermalink }}" class="tag">{{ .LinkTitle }}</a></li>
-      {{ end }}
-    </ul>
-  {{ end }}
-  {{ end }}
-
-</div>
-
-<!-- Reply/Interaction Buttons -->
-<ul class="reply-buttons">
+  <!-- Reply/Interaction Buttons -->
+  <ul class="reply-buttons">
   <li><a class="conversation-on-mb" href="https://micro.blog/conversation?url={{ .Permalink }}">View on Micro.blog</a></li>
   <li><a class="reply-by-email" href="mailto:{{ .Site.Params.email }}?subject=Re: {{ .Title | default .Summary }}">Reply by Email</a></li>
   {{ if .Params.mastodon }}
@@ -62,7 +63,7 @@
 </div>
 {{ end }}
 
-<!-- Micro.blog Conversation Thread -->
-<script type="text/javascript" src="https://micro.blog/conversation.js?url={{ .Permalink }}"></script>
-
+  <!-- Micro.blog Conversation Thread -->
+  <script type="text/javascript" src="https://micro.blog/conversation.js?url={{ .Permalink }}"></script>
+</div>
 {{ end }}
