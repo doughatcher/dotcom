@@ -180,6 +180,7 @@ a:hover {
   min-width: 280px;
   background-color: hsl(var(--muted) / 0.2);
   border-right: 1px solid hsl(var(--border) / 0.3);
+  border-left: none;
   padding: 3rem 2rem;
   position: fixed;
   top: 0;
