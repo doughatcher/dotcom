@@ -8,7 +8,24 @@
         
         {{ if $publicationsCategory }}
         {{ range first $limit $publicationsCategory.Pages }}
-        <article class="publication-sidebar-item">
+        {{/* Determine link based on content length */}}
+        {{ $sidebarLink := .RelPermalink }}
+        {{ $plainContent := .Plain }}
+        {{ $contentLength := len $plainContent }}
+        
+        {{/* If post is short (<300 chars), link to first external link */}}
+        {{ if lt $contentLength 300 }}
+            {{ $content := .Content }}
+            {{ if findRE `href="([^"]+)"` $content 1 }}
+                {{ $matches := findRE `href="([^"]+)"` $content 1 }}
+                {{ $match := index $matches 0 }}
+                {{ $sidebarLink = replaceRE `href="([^"]+)"` "$1" $match }}
+            {{ else if .Params.canonical_url }}
+                {{ $sidebarLink = .Params.canonical_url }}
+            {{ end }}
+        {{ end }}
+        
+        <article class="publication-sidebar-item" data-sidebar-url="{{ $sidebarLink }}" data-content-length="{{ $contentLength }}">
             {{ $thumbnail := "" }}
             {{ if .Params.thumbnail }}
                 {{ $thumbnail = .Params.thumbnail }}
@@ -16,23 +33,6 @@
                 {{ $thumbnail = index .Params.photos 0 }}
             {{ else if .Params.images }}
                 {{ $thumbnail = index .Params.images 0 }}
-            {{ end }}
-            
-            {{/* Determine link based on content length */}}
-            {{ $sidebarLink := .RelPermalink }}
-            {{ $plainContent := .Plain }}
-            {{ $contentLength := len $plainContent }}
-            
-            {{/* If post is short (<300 chars), link to first external link */}}
-            {{ if lt $contentLength 300 }}
-                {{ $content := .Content }}
-                {{ if findRE `href="([^"]+)"` $content 1 }}
-                    {{ $matches := findRE `href="([^"]+)"` $content 1 }}
-                    {{ $match := index $matches 0 }}
-                    {{ $sidebarLink = replaceRE `href="([^"]+)"` "$1" $match }}
-                {{ else if .Params.canonical_url }}
-                    {{ $sidebarLink = .Params.canonical_url }}
-                {{ end }}
             {{ end }}
             
             {{ if $thumbnail }}

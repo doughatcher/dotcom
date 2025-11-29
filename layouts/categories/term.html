@@ -41,7 +41,7 @@
             {{ end }}
         {{ end }}
         
-        <article class="publication-item">
+        <article class="publication-item" data-external-url="{{ if $isExternal }}{{ $contentLink }}{{ end }}" data-content-length="{{ len $plainContent }}">
             {{ $thumbnail := "" }}
             {{ if .Params.thumbnail }}
                 {{ $thumbnail = .Params.thumbnail }}

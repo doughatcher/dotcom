@@ -548,7 +548,8 @@ a:hover {
   height: 60px;
   border-radius: 6px;
   overflow: hidden;
-  background: hsl(var(--muted));
+  background: hsl(var(--muted) / 0.3);
+  position: relative;
 }
 
 .publication-sidebar-thumbnail a {
@@ -562,6 +563,7 @@ a:hover {
   height: 100%;
   object-fit: cover;
   transition: transform 0.2s ease;
+  background: hsl(var(--muted) / 0.3);
 }
 
 .publication-sidebar-item:hover .publication-sidebar-thumbnail img {
@@ -1825,6 +1827,45 @@ a:hover {
   height: 120px;
   overflow: hidden;
   border-radius: 8px;
+  background: hsl(var(--muted) / 0.3);
+  position: relative;
+}
+
+/* Loading state for thumbnails */
+.thumbnail-loading .publication-thumbnail::after,
+.thumbnail-loading .publication-sidebar-thumbnail::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, 
+    transparent 0%, 
+    hsl(var(--muted) / 0.5) 50%, 
+    transparent 100%);
+  animation: shimmer 1.5s infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Smooth fade-in for loaded thumbnails */
+.thumbnail-loaded .publication-thumbnail,
+.thumbnail-loaded .publication-sidebar-thumbnail {
+  animation: fadeIn 0.4s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .publication-thumbnail a {
@@ -1840,6 +1881,7 @@ a:hover {
   border-radius: 8px;
   border: 1px solid hsl(var(--border));
   transition: transform 0.2s ease;
+  background: hsl(var(--muted) / 0.3);
 }
 
 .publication-thumbnail img:hover {
