@@ -6,9 +6,14 @@
             <img src="{{ .Site.Params.avatar }}" alt="{{ .Site.Title }}">
         </a>
         {{ end }}
-        <h1 class="mobile-site-title">
-            <a href="{{ "/" | relURL }}">{{ .Site.Title }}</a>
-        </h1>
+        <div class="mobile-header-content">
+            <h1 class="mobile-site-title">
+                <a href="{{ "/" | relURL }}">{{ .Site.Title }}</a>
+            </h1>
+            {{ if and .Site.Params.show_bio .Site.Params.bio }}
+            <p class="mobile-bio">{{ .Site.Params.bio }}</p>
+            {{ end }}
+        </div>
     </div>
     
     <div class="sidebar-content">
