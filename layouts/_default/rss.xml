@@ -38,7 +38,7 @@
       {{ with .Site.Params.author }}<author>{{ . }}</author>{{end}}
       <guid>{{ .Permalink }}</guid>
       <description>{{ .Summary | html }}</description>
-      <content:encoded><![CDATA[{{ .Content }}]]></content:encoded>
+      <content:encoded>{{ .Content | html }}</content:encoded>
       {{ range .Params.tags }}
       <category>{{ . }}</category>
       {{ end }}

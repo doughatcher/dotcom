@@ -37,7 +37,7 @@
       {{- end }}
       <guid>{{ .Permalink }}</guid>
       <description>{{ .Summary | html }}</description>
-      <content:encoded><![CDATA[{{ .Content }}]]></content:encoded>
+      <content:encoded>{{ .Content | html }}</content:encoded>
       {{- range .Params.categories }}
       <category>{{ . }}</category>
       {{- end }}

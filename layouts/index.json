@@ -17,7 +17,7 @@
 		{{- range $index, $page := first 20 $pages -}}
 		{{- if ne $index 0 }},{{ end }}
 		{
-			"id": {{ .Permalink | jsonify }},
+			"id": {{ .RelPermalink | jsonify }},
 			"url": {{ .Permalink | jsonify }},
 			{{- if .Title }}
 			"title": {{ .Title | jsonify }},
