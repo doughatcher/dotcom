@@ -1,30 +1,30 @@
 /* CSS Custom Properties (Design Tokens) inspired by shadcn/ui */
 :root,
 html {
-  /* Core Theme Colors - Change these for different effects! */
-  --theme-hue: 221.2;          /* Primary color hue (0-360): 221=blue, 0=red, 120=green, 280=purple */
-  --theme-saturation: 83.2%;   /* Color intensity: 0%=grayscale, 100%=vibrant */
-  --theme-lightness: 53.3%;    /* Brightness: 0%=black, 100%=white */
+  /* Core Theme Colors - Sage/Turquoise Green (Native-inspired) */
+  --theme-hue: 165;                /* Turquoise-green, earthy and calming */
+  --theme-saturation: 50%;         /* Muted, natural saturation */
+  --theme-lightness: 48%;          /* Balanced, earthy tone */
   
   /* Light Mode Colors (default) */
   --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
+  --foreground: 240 10% 3.9%;
   --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
+  --card-foreground: 240 10% 3.9%;
   --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
+  --popover-foreground: 240 10% 3.9%;
   --primary: var(--theme-hue) var(--theme-saturation) var(--theme-lightness);
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222.2 84% 4.9%;
-  --muted: 210 40% 96%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96%;
-  --accent-foreground: 222.2 84% 4.9%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 4.8% 95.9%;
+  --secondary-foreground: 240 5.9% 10%;
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
+  --accent: 240 4.8% 95.9%;
+  --accent-foreground: 240 5.9% 10%;
   --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 5.9% 90%;
+  --input: 240 5.9% 90%;
   --ring: var(--theme-hue) var(--theme-saturation) var(--theme-lightness);
   --radius: 0.5rem;
   
@@ -37,74 +37,74 @@ html {
 @media (prefers-color-scheme: dark) {
   :root:not(.light),
   html:not(.light) {
-    /* Dark Mode Colors */
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: var(--theme-hue) 91.2% 59.8%;
-    --primary-foreground: 222.2 84% 4.9%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    /* Dark Mode Colors - Neutral slate background */
+    --background: 240 10% 3.9%;      /* Deep neutral slate */
+    --foreground: 0 0% 98%;
+    --card: 240 10% 7%;              /* Slightly lighter slate for cards */
+    --card-foreground: 0 0% 98%;
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: var(--theme-hue) 84% 60%;  /* Bright green accent */
+    --primary-foreground: 240 10% 3.9%;
+    --secondary: 240 3.7% 15.9%;     /* Neutral secondary */
+    --secondary-foreground: 0 0% 98%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
     --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 224.3 76.3% 94.1%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: var(--theme-hue) 84% 60%;
   }
 }
 
 /* Manual dark mode override (if .dark class is added to html/body) */
 html.dark {
-  /* Dark Mode Colors */
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: var(--theme-hue) 91.2% 59.8%;
-  --primary-foreground: 222.2 84% 4.9%;
-  --secondary: 217.2 32.6% 17.5%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
+  /* Dark Mode Colors - Neutral slate background */
+  --background: 240 10% 3.9%;      /* Deep neutral slate */
+  --foreground: 0 0% 98%;
+  --card: 240 10% 7%;              /* Slightly lighter slate for cards */
+  --card-foreground: 0 0% 98%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --primary: var(--theme-hue) 84% 60%;  /* Bright green accent */
+  --primary-foreground: 240 10% 3.9%;
+  --secondary: 240 3.7% 15.9%;     /* Neutral secondary */
+  --secondary-foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --accent: 240 3.7% 15.9%;
+  --accent-foreground: 0 0% 98%;
   --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 224.3 76.3% 94.1%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --ring: var(--theme-hue) 84% 60%;
 }
 
 /* Manual light mode override */
 html.light {
   /* Light Mode Colors */
   --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
+  --foreground: 240 10% 3.9%;
   --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
+  --card-foreground: 240 10% 3.9%;
   --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
+  --popover-foreground: 240 10% 3.9%;
   --primary: var(--theme-hue) var(--theme-saturation) var(--theme-lightness);
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222.2 84% 4.9%;
-  --muted: 210 40% 96%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96%;
-  --accent-foreground: 222.2 84% 4.9%;
+  --primary-foreground: 0 0% 98%;
+  --secondary: 240 4.8% 95.9%;
+  --secondary-foreground: 240 5.9% 10%;
+  --muted: 240 4.8% 95.9%;
+  --muted-foreground: 240 3.8% 46.1%;
+  --accent: 240 4.8% 95.9%;
+  --accent-foreground: 240 5.9% 10%;
   --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 240 5.9% 90%;
+  --input: 240 5.9% 90%;
   --ring: var(--theme-hue) var(--theme-saturation) var(--theme-lightness);
 }
 
@@ -1030,11 +1030,36 @@ a:hover {
   margin-bottom: 0.5rem;
 }
 
-.single-post-card .post-content img {
+.single-post-card /* Image Styling - Modern Card-Based Approach */
+.post-body img,
+.post-content img {
   max-width: 100%;
   height: auto;
-  border-radius: 0.5rem;
-  margin: 2rem 0;
+  border-radius: 0.75rem;
+  margin: 1.5rem 0;
+  border: 1px solid hsl(var(--border) / 0.3);
+  box-shadow: 0 4px 12px hsl(var(--foreground) / 0.08);
+  transition: all 0.3s ease;
+  display: block;
+}
+
+.post-body img:hover,
+.post-content img:hover {
+  border-color: hsl(var(--border) / 0.6);
+  box-shadow: 0 8px 24px hsl(var(--foreground) / 0.12);
+  transform: translateY(-2px);
+}
+
+/* For images that are links, enhance the effect */
+.post-body a img,
+.post-content a img {
+  cursor: pointer;
+}
+
+.post-body a:hover img,
+.post-content a:hover img {
+  border-color: hsl(var(--primary) / 0.4);
+  box-shadow: 0 8px 24px hsl(var(--primary) / 0.15);
 }
 
 .syndication-section {

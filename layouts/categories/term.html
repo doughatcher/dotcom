@@ -6,26 +6,39 @@
 
     <div class="publications-list">
         {{ range .Pages }}
-        {{ $externalLink := .Permalink }}
+        {{ $externalLink := .RelPermalink }}
         {{ $contentLink := "" }}
         {{ $linkDomain := "" }}
+        {{ $isExternal := false }}
+        {{ $showExternalIcon := false }}
         
-        {{/* Extract link from content using regex */}}
-        {{ $content := .Content }}
-        {{ if findRE `href="([^"]+)"` $content 1 }}
-            {{ $matches := findRE `href="([^"]+)"` $content 1 }}
-            {{ $match := index $matches 0 }}
-            {{ $contentLink = replaceRE `href="([^"]+)"` "$1" $match }}
-            {{ $externalLink = $contentLink }}
-            {{/* Extract domain from URL */}}
-            {{ if findRE `https?://([^/]+)` $contentLink 1 }}
-                {{ $domainMatches := findRE `https?://([^/]+)` $contentLink 1 }}
-                {{ $domainMatch := index $domainMatches 0 }}
-                {{ $linkDomain = replaceRE `https?://([^/]+)` "$1" $domainMatch }}
+        {{/* Check content length - use plainify to strip HTML */}}
+        {{ $plainContent := .Plain }}
+        {{ $contentLength := len $plainContent }}
+        
+        {{/* If post is short (<300 chars), link to first external link */}}
+        {{ if lt $contentLength 300 }}
+            {{/* Extract link from content using regex */}}
+            {{ $content := .Content }}
+            {{ if findRE `href="([^"]+)"` $content 1 }}
+                {{ $matches := findRE `href="([^"]+)"` $content 1 }}
+                {{ $match := index $matches 0 }}
+                {{ $contentLink = replaceRE `href="([^"]+)"` "$1" $match }}
+                {{ $externalLink = $contentLink }}
+                {{ $isExternal = true }}
+                {{ $showExternalIcon = true }}
+                {{/* Extract domain from URL */}}
+                {{ if findRE `https?://([^/]+)` $contentLink 1 }}
+                    {{ $domainMatches := findRE `https?://([^/]+)` $contentLink 1 }}
+                    {{ $domainMatch := index $domainMatches 0 }}
+                    {{ $linkDomain = replaceRE `https?://([^/]+)` "$1" $domainMatch }}
+                {{ end }}
+            {{ else if .Params.canonical_url }}
+                {{ $externalLink = .Params.canonical_url }}
+                {{ $contentLink = .Params.canonical_url }}
+                {{ $isExternal = true }}
+                {{ $showExternalIcon = true }}
             {{ end }}
-        {{ else if .Params.canonical_url }}
-            {{ $externalLink = .Params.canonical_url }}
-            {{ $contentLink = .Params.canonical_url }}
         {{ end }}
         
         <article class="publication-item">
@@ -40,7 +53,7 @@
             
             {{ if $thumbnail }}
             <div class="publication-thumbnail">
-                <a href="{{ $externalLink }}" target="_blank" rel="noopener noreferrer">
+                <a href="{{ $externalLink }}"{{ if $isExternal }} target="_blank" rel="noopener noreferrer"{{ end }}>
                     <img src="{{ $thumbnail }}" alt="{{ .Title }}" loading="lazy">
                 </a>
             </div>
@@ -48,9 +61,9 @@
             
             <div class="publication-content-wrapper">
                 <h2 class="publication-title">
-                    <a href="{{ $externalLink }}" target="_blank" rel="noopener noreferrer">
+                    <a href="{{ $externalLink }}"{{ if $isExternal }} target="_blank" rel="noopener noreferrer"{{ end }}>
                         {{ .Title }}
-                        {{ if $contentLink }}
+                        {{ if $showExternalIcon }}
                         <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24" style="display: inline-block; margin-left: 0.25rem; vertical-align: middle;">
                             <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6m4-3h6v6m-11 5L21 3"/>
                         </svg>
@@ -76,9 +89,13 @@
                     {{ if .Date }}
                     <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "January 2, 2006" }}</time>
                     {{ end }}
-                    {{ if $contentLink }}
+                    {{ if $isExternal }}
                     <a href="{{ $contentLink }}" target="_blank" rel="noopener noreferrer" class="read-more">
                         Learn more on {{ $linkDomain | default (.Params.publication | default "external site") }} →
+                    </a>
+                    {{ else }}
+                    <a href="{{ $externalLink }}" class="read-more">
+                        Read full post →
                     </a>
                     {{ end }}
                     {{ if .Params.spotify_url }}

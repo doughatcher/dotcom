@@ -18,9 +18,26 @@
                 {{ $thumbnail = index .Params.images 0 }}
             {{ end }}
             
+            {{/* Determine link based on content length */}}
+            {{ $sidebarLink := .RelPermalink }}
+            {{ $plainContent := .Plain }}
+            {{ $contentLength := len $plainContent }}
+            
+            {{/* If post is short (<300 chars), link to first external link */}}
+            {{ if lt $contentLength 300 }}
+                {{ $content := .Content }}
+                {{ if findRE `href="([^"]+)"` $content 1 }}
+                    {{ $matches := findRE `href="([^"]+)"` $content 1 }}
+                    {{ $match := index $matches 0 }}
+                    {{ $sidebarLink = replaceRE `href="([^"]+)"` "$1" $match }}
+                {{ else if .Params.canonical_url }}
+                    {{ $sidebarLink = .Params.canonical_url }}
+                {{ end }}
+            {{ end }}
+            
             {{ if $thumbnail }}
             <div class="publication-sidebar-thumbnail">
-                <a href="{{ .RelPermalink }}">
+                <a href="{{ $sidebarLink }}">
                     <img src="{{ $thumbnail }}" alt="{{ .Title }}" loading="lazy">
                 </a>
             </div>
@@ -28,7 +45,7 @@
             
             <div class="publication-sidebar-content">
                 <h4 class="publication-sidebar-title">
-                    <a href="{{ .RelPermalink }}">{{ .Title }}</a>
+                    <a href="{{ $sidebarLink }}">{{ .Title }}</a>
                 </h4>
                 {{ if .Date }}
                 <time class="publication-sidebar-date" datetime="{{ .Date.Format "2006-01-02" }}">
