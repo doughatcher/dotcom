@@ -112,8 +112,13 @@
         const linkText = link.textContent.trim();
         
         // Check if link is standalone OR if it's at the end with text before it
-        const isStandalone = textContent === linkText;
-        const isTrailingLink = textContent.endsWith(linkText) && textContent.length > linkText.length;
+        // Also handle cases where the link might be truncated with ellipsis
+        const isStandalone = textContent === linkText || 
+                            (textContent === linkText + '…' || textContent === linkText + '...');
+        const isTrailingLink = (textContent.endsWith(linkText) || 
+                               textContent.endsWith(linkText + '…') ||
+                               textContent.endsWith(linkText + '...')) && 
+                              textContent.length > linkText.length;
         
         if (isStandalone || isTrailingLink) {
           console.log('Fetching preview for:', link.href);

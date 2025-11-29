@@ -18,14 +18,7 @@
             {{ end }}
             
             <div class="post-body">
-                {{ if .Summary }}
-                    {{ .Summary }}
-                    {{ if .Truncated }}
-                    <p><a href="{{ .RelPermalink }}" class="read-more">Continue reading →</a></p>
-                    {{ end }}
-                {{ else }}
-                    {{ .Content }}
-                {{ end }}
+                {{ .Content }}
             </div>
             
             <div class="post-meta">
