@@ -7,24 +7,24 @@ html {
   --theme-lightness: 48%;          /* Balanced, earthy tone */
   
   /* Light Mode Colors (default) */
-  --background: 0 0% 100%;
+  --background: 0 0% 96%;           /* Soft light grey instead of pure white */
   --foreground: 240 10% 3.9%;
-  --card: 0 0% 100%;
+  --card: 0 0% 98.5%;               /* Very light grey for cards */
   --card-foreground: 240 10% 3.9%;
-  --popover: 0 0% 100%;
+  --popover: 0 0% 98%;
   --popover-foreground: 240 10% 3.9%;
   --primary: var(--theme-hue) var(--theme-saturation) var(--theme-lightness);
   --primary-foreground: 0 0% 98%;
-  --secondary: 240 4.8% 95.9%;
+  --secondary: 240 4.8% 93%;        /* Slightly darker grey */
   --secondary-foreground: 240 5.9% 10%;
-  --muted: 240 4.8% 95.9%;
+  --muted: 240 4.8% 93%;            /* Slightly darker grey */
   --muted-foreground: 240 3.8% 46.1%;
-  --accent: 240 4.8% 95.9%;
+  --accent: 240 4.8% 93%;           /* Slightly darker grey */
   --accent-foreground: 240 5.9% 10%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 98%;
-  --border: 240 5.9% 90%;
-  --input: 240 5.9% 90%;
+  --border: 240 5.9% 88%;           /* Slightly darker border */
+  --input: 240 5.9% 88%;
   --ring: var(--theme-hue) var(--theme-saturation) var(--theme-lightness);
   --radius: 0.5rem;
   
@@ -87,24 +87,24 @@ html.dark {
 /* Manual light mode override */
 html.light {
   /* Light Mode Colors */
-  --background: 0 0% 100%;
+  --background: 0 0% 96%;           /* Soft light grey instead of pure white */
   --foreground: 240 10% 3.9%;
-  --card: 0 0% 100%;
+  --card: 0 0% 98.5%;               /* Very light grey for cards */
   --card-foreground: 240 10% 3.9%;
-  --popover: 0 0% 100%;
+  --popover: 0 0% 98%;
   --popover-foreground: 240 10% 3.9%;
   --primary: var(--theme-hue) var(--theme-saturation) var(--theme-lightness);
   --primary-foreground: 0 0% 98%;
-  --secondary: 240 4.8% 95.9%;
+  --secondary: 240 4.8% 93%;        /* Slightly darker grey */
   --secondary-foreground: 240 5.9% 10%;
-  --muted: 240 4.8% 95.9%;
+  --muted: 240 4.8% 93%;            /* Slightly darker grey */
   --muted-foreground: 240 3.8% 46.1%;
-  --accent: 240 4.8% 95.9%;
+  --accent: 240 4.8% 93%;           /* Slightly darker grey */
   --accent-foreground: 240 5.9% 10%;
   --destructive: 0 84.2% 60.2%;
   --destructive-foreground: 0 0% 98%;
-  --border: 240 5.9% 90%;
-  --input: 240 5.9% 90%;
+  --border: 240 5.9% 88%;           /* Slightly darker border */
+  --input: 240 5.9% 88%;
   --ring: var(--theme-hue) var(--theme-saturation) var(--theme-lightness);
 }
 
