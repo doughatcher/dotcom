@@ -75,9 +75,9 @@
                 <p class="publication-source">Published on {{ .Params.publication }}{{ if eq .Params.media_type "podcast" }} • Podcast{{ end }}</p>
                 {{ end }}
                 
-                {{ if .Params.custom_summary }}
+                {{ if .Params.summary }}
                 <div class="publication-description">
-                    {{ .Summary }}
+                    {{ .Params.summary }}
                 </div>
                 {{ else if .Summary }}
                 <div class="publication-description">
