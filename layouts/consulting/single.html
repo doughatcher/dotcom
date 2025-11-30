@@ -62,8 +62,8 @@
           <li>Cost-Effective Growth Strategies</li>
           <li>Hands-On Technical Mentorship</li>
         </ul>
-        <a href="mailto:doug@hatcher.ltd" class="service-cta">
-          Email Doug
+        <a href="#" class="service-cta" onclick="openHatcherForm(event)">
+          Get Started
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="5" y1="12" x2="19" y2="12"></line>
             <polyline points="12 5 19 12 12 19"></polyline>
@@ -78,6 +78,44 @@
     {{ .Content }}
   </div>
 </div>
+
+<!-- Lightbox Modal for Hatcher.ltd Form -->
+<div id="hatcher-lightbox" class="lightbox-overlay" onclick="closeLightbox(event)">
+  <div class="lightbox-content" onclick="event.stopPropagation()">
+    <button class="lightbox-close" onclick="closeLightbox(event)" aria-label="Close">
+      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"></line>
+        <line x1="6" y1="6" x2="18" y2="18"></line>
+      </svg>
+    </button>
+    <div class="lightbox-body">
+      <h3>Get in Touch</h3>
+      <div class="hs-form-frame" data-region="na2" data-form-id="4dde8dbb-cfcd-4e21-b94e-418bd1af2490" data-portal-id="244492594"></div>
+    </div>
+  </div>
+</div>
+
+<script src="https://js-na2.hsforms.net/forms/embed/244492594.js" defer></script>
+<script>
+function openHatcherForm(event) {
+  event.preventDefault();
+  document.getElementById('hatcher-lightbox').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeLightbox(event) {
+  event.preventDefault();
+  document.getElementById('hatcher-lightbox').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+// Close on Escape key
+document.addEventListener('keydown', function(event) {
+  if (event.key === 'Escape') {
+    closeLightbox(event);
+  }
+});
+</script>
 
 <style>
 .consulting-page {
@@ -394,6 +432,103 @@
   .service-icon svg {
     width: 36px;
     height: 36px;
+  }
+}
+
+/* Lightbox Styles */
+.lightbox-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+  padding: 1rem;
+}
+
+.lightbox-overlay.active {
+  opacity: 1;
+  visibility: visible;
+}
+
+.lightbox-content {
+  background: linear-gradient(135deg, hsl(160 60% 96%) 0%, hsl(165 55% 98%) 100%);
+  border-radius: 1rem;
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  transform: scale(0.9);
+  transition: transform 0.3s ease;
+  border: 2px solid hsl(165 70% 55%);
+}
+
+.lightbox-overlay.active .lightbox-content {
+  transform: scale(1);
+}
+
+.lightbox-close {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: hsl(var(--muted) / 0.5);
+  border: 1px solid hsl(var(--border));
+  border-radius: 0.5rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 1;
+  color: hsl(var(--foreground));
+}
+
+.lightbox-close:hover {
+  background: hsl(var(--muted));
+  transform: rotate(90deg);
+}
+
+.lightbox-body {
+  padding: 2.5rem;
+}
+
+.lightbox-body h3 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0 0 1.5rem 0;
+  color: hsl(240 10% 3.9%);
+}
+
+/* HubSpot Form Styling */
+.hs-form-frame {
+  margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+  .lightbox-content {
+    max-height: 95vh;
+    margin: 0.5rem;
+  }
+  
+  .lightbox-body {
+    padding: 2rem 1.5rem;
+  }
+  
+  .lightbox-body h3 {
+    font-size: 1.5rem;
   }
 }
 </style>
