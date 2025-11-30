@@ -1,0 +1,400 @@
+{{ define "main" }}
+<div class="consulting-page">
+  <!-- Hero Section -->
+  <div class="consulting-hero">
+    <div class="hero-content">
+      <h1 class="hero-title">{{ .Title }}</h1>
+      <p class="hero-subtitle">Transforming businesses through strategic technology consulting</p>
+    </div>
+  </div>
+
+  <!-- Services Section -->
+  <div class="consulting-services">
+    <!-- Enterprise Consulting -->
+    <div class="service-card enterprise-card">
+      <div class="service-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+        </svg>
+      </div>
+      <div class="service-content">
+        <h2 class="service-title">Enterprise Consulting</h2>
+        <p class="service-provider">Through <strong>Blue Acorn iCi x Infosys</strong></p>
+        <p class="service-description">
+          Partner with Blue Acorn iCi x Infosys for enterprise-grade digital commerce solutions. I specialize in helping large organizations navigate complex technology transformations, optimize their e-commerce platforms, and drive measurable business growth through strategic implementation and innovation.
+        </p>
+        <ul class="service-features">
+          <li>Digital Commerce Strategy & Implementation</li>
+          <li>Enterprise Platform Optimization</li>
+          <li>Large-Scale Technology Transformations</li>
+          <li>Multi-Channel Integration Solutions</li>
+          <li>Performance & Scalability Engineering</li>
+        </ul>
+        <a href="https://www.blueacornici.com/contact" target="_blank" rel="noopener noreferrer" class="service-cta">
+          Contact Blue Acorn iCi
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <!-- SMB Consulting -->
+    <div class="service-card smb-card">
+      <div class="service-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+          <polyline points="9 22 9 12 15 12 15 22"></polyline>
+        </svg>
+      </div>
+      <div class="service-content">
+        <h2 class="service-title">SMB Consulting</h2>
+        <p class="service-provider">Through <strong>Hatcher.ltd</strong></p>
+        <p class="service-description">
+          Get personalized consulting services tailored for small and medium-sized businesses. Whether you're launching your first online store, modernizing your tech stack, or looking to scale efficiently, I provide hands-on guidance and practical solutions that fit your budget and timeline.
+        </p>
+        <ul class="service-features">
+          <li>E-Commerce Platform Selection & Setup</li>
+          <li>Technology Stack Modernization</li>
+          <li>Process Optimization & Automation</li>
+          <li>Cost-Effective Growth Strategies</li>
+          <li>Hands-On Technical Mentorship</li>
+        </ul>
+        <a href="mailto:doug@hatcher.ltd" class="service-cta">
+          Email Doug
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+            <polyline points="12 5 19 12 12 19"></polyline>
+          </svg>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Page Content (if any added to markdown) -->
+  <div class="consulting-additional-content">
+    {{ .Content }}
+  </div>
+</div>
+
+<style>
+.consulting-page {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.consulting-hero {
+  text-align: center;
+  padding: 4rem 2rem;
+  margin-bottom: 4rem;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.1) 0%, hsl(var(--primary) / 0.05) 100%);
+  border-radius: 1.5rem;
+  border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.hero-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.hero-title {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--primary) / 0.7) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1.2;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  color: hsl(var(--muted-foreground));
+  margin: 0;
+}
+
+.consulting-services {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 500px), 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+.service-card {
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-radius: 1rem;
+  padding: 2.5rem;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+.service-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 32px hsl(var(--foreground) / 0.1);
+  border-color: hsl(var(--primary) / 0.4);
+}
+
+.enterprise-card {
+  border-top: 4px solid hsl(var(--primary));
+}
+
+.smb-card {
+  border-top: 4px solid hsl(165 70% 55%);
+}
+
+.service-icon {
+  width: 72px;
+  height: 72px;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.15) 0%, hsl(var(--primary) / 0.05) 100%);
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  color: hsl(var(--primary));
+}
+
+.smb-card .service-icon {
+  background: linear-gradient(135deg, hsl(165 70% 55% / 0.15) 0%, hsl(165 70% 55% / 0.05) 100%);
+  color: hsl(165 70% 45%);
+}
+
+.service-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.service-title {
+  font-size: 1.875rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  color: hsl(var(--foreground));
+}
+
+.service-provider {
+  font-size: 0.9375rem;
+  color: hsl(var(--muted-foreground));
+  margin: 0 0 1.25rem 0;
+  font-style: italic;
+}
+
+.service-provider strong {
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.smb-card .service-provider strong {
+  color: hsl(165 70% 45%);
+}
+
+.service-description {
+  font-size: 1rem;
+  line-height: 1.75;
+  color: hsl(var(--foreground) / 0.85);
+  margin-bottom: 1.5rem;
+}
+
+.service-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 2rem 0;
+  flex: 1;
+}
+
+.service-features li {
+  padding: 0.75rem 0 0.75rem 2rem;
+  position: relative;
+  color: hsl(var(--foreground) / 0.9);
+  font-size: 0.9375rem;
+  line-height: 1.5;
+  border-bottom: 1px solid hsl(var(--border) / 0.2);
+}
+
+.service-features li:last-child {
+  border-bottom: none;
+}
+
+.service-features li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: hsl(var(--primary));
+  font-weight: 700;
+  font-size: 1.125rem;
+}
+
+.smb-card .service-features li::before {
+  color: hsl(165 70% 45%);
+}
+
+.service-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.875rem 1.5rem;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9375rem;
+  transition: all 0.3s ease;
+  align-self: flex-start;
+  border: 2px solid hsl(var(--primary));
+}
+
+.service-cta:hover {
+  background: hsl(var(--primary) / 0.9);
+  transform: translateX(4px);
+  box-shadow: 0 4px 12px hsl(var(--primary) / 0.3);
+}
+
+.smb-card .service-cta {
+  background: hsl(165 70% 45%);
+  border-color: hsl(165 70% 45%);
+  color: white;
+}
+
+.smb-card .service-cta:hover {
+  background: hsl(165 70% 40%);
+  box-shadow: 0 4px 12px hsl(165 70% 45% / 0.3);
+}
+
+.consulting-contact {
+  text-align: center;
+  padding: 3rem 2rem;
+  background: linear-gradient(135deg, hsl(var(--muted) / 0.3) 0%, hsl(var(--muted) / 0.1) 100%);
+  border-radius: 1rem;
+  border: 1px solid hsl(var(--border) / 0.3);
+  margin-bottom: 3rem;
+}
+
+.consulting-contact h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: hsl(var(--foreground));
+}
+
+.consulting-contact p {
+  font-size: 1.125rem;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 2rem;
+}
+
+.contact-options {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.contact-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 1rem 2rem;
+  background: hsl(var(--primary));
+  color: hsl(var(--primary-foreground));
+  border-radius: 0.5rem;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  border: 2px solid hsl(var(--primary));
+}
+
+.contact-button:hover {
+  background: hsl(var(--primary) / 0.9);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px hsl(var(--primary) / 0.3);
+}
+
+.consulting-additional-content {
+  max-width: 800px;
+  margin: 0 auto;
+  line-height: 1.75;
+}
+
+.consulting-additional-content h2 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 2.5rem 0 1rem 0;
+  color: hsl(var(--foreground));
+}
+
+.consulting-additional-content h3 {
+  font-size: 1.375rem;
+  font-weight: 600;
+  margin: 2rem 0 0.875rem 0;
+  color: hsl(var(--foreground));
+}
+
+.consulting-additional-content p {
+  margin-bottom: 1.25rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .hero-title {
+    font-size: 2rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .consulting-hero {
+    padding: 2.5rem 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .consulting-services {
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .service-card {
+    padding: 2rem 1.5rem;
+  }
+
+  .service-title {
+    font-size: 1.5rem;
+  }
+
+  .consulting-contact {
+    padding: 2rem 1.5rem;
+  }
+
+  .consulting-contact h2 {
+    font-size: 1.5rem;
+  }
+
+  .consulting-contact p {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 1.75rem;
+  }
+
+  .service-icon {
+    width: 60px;
+    height: 60px;
+  }
+
+  .service-icon svg {
+    width: 36px;
+    height: 36px;
+  }
+}
+</style>
+{{ end }}
