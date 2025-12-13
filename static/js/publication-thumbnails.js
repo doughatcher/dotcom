@@ -22,10 +22,24 @@
             const data = await response.json();
             
             if (data.status === 'success' && data.data) {
-                // Try to get the best image available
-                const imageUrl = data.data.image?.url || 
-                               data.data.logo?.url || 
-                               data.data.screenshot?.url;
+                // ONLY use og:image - don't fall back to logo or screenshot
+                // Those tend to be low quality or full page screenshots
+                const imageUrl = data.data.image?.url;
+                
+                if (!imageUrl) {
+                    console.log(`No og:image found for ${url}`);
+                    return null;
+                }
+                
+                // Validate image quality - reject if it looks like it might be a screenshot
+                const imageData = data.data.image;
+                if (imageData) {
+                    // Reject images that are too wide (likely full page screenshots)
+                    if (imageData.width > 2000 || imageData.height > 2000) {
+                        console.log(`Rejecting oversized image for ${url}: ${imageData.width}x${imageData.height}`);
+                        return null;
+                    }
+                }
                 
                 return {
                     image: imageUrl,
@@ -110,28 +124,34 @@
         const publicationItems = document.querySelectorAll('.publication-item, .publication-sidebar-item');
         
         for (const item of publicationItems) {
-            // Check if item already has a thumbnail with a valid src
-            const existingThumbnail = item.querySelector('.publication-thumbnail img, .publication-sidebar-thumbnail img');
-            if (existingThumbnail && existingThumbnail.src && existingThumbnail.src.startsWith('http')) {
-                // Skip if already has a thumbnail - don't replace existing images
-                console.log('Skipping item - already has thumbnail:', existingThumbnail.src);
-                continue;
-            }
-
-            // Get the publication link
+            // Get the publication link first
             const link = item.querySelector('.publication-title a, .publication-sidebar-title a');
             if (!link) continue;
 
             const url = link.getAttribute('href');
             
-            // Only fetch for external URLs
+            // Only process external URLs
             if (!url || !url.startsWith('http') || url.includes(window.location.hostname)) {
                 continue;
             }
 
-            // Check if this is a short post that links externally
-            const isShortPost = item.dataset.contentLength && parseInt(item.dataset.contentLength) < 300;
-            
+            // Check if item has a Micro.blog generated thumbnail (these are screenshot-style)
+            const existingThumbnail = item.querySelector('.publication-thumbnail img, .publication-sidebar-thumbnail img');
+            if (existingThumbnail && existingThumbnail.src) {
+                // Replace Micro.blog thumbnails with better og:images
+                const isMicroBlogThumbnail = existingThumbnail.src.includes('micro.blog/thumbnails') || 
+                                            existingThumbnail.src.includes('s3.amazonaws.com/micro.blog/thumbnails');
+                
+                if (!isMicroBlogThumbnail && existingThumbnail.src.startsWith('http')) {
+                    // Skip if it's already a custom thumbnail (not from Micro.blog)
+                    console.log('Skipping item - already has custom thumbnail:', existingThumbnail.src);
+                    continue;
+                }
+                
+                // If it's a Micro.blog thumbnail, we'll replace it below
+                console.log('Will replace Micro.blog thumbnail for:', url);
+            }
+
             console.log(`Fetching thumbnail for: ${url}`);
             
             // Add loading state
