@@ -11,6 +11,6 @@
 		"ghcr.io/schlich/devcontainer-features/just:0": {}
 	},
 	"postCreateCommand": "sudo apt-get update && sudo apt-get install -y python3-requests python3-dotenv",
-	"postAttachCommand": "hugo serve --disableFastRender",
+	"postAttachCommand": "hugo serve --disableFastRender --noHTTPCache",
 	"forwardPorts": [1313]
 }
