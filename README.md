@@ -177,6 +177,64 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 - **Design inspiration**: shadcn/ui design system
 - **Named after**: Absolutely nobody - Doug doesn't go by Dougie
 
+## Automated Deployment
+
+This theme uses GitHub Actions for automated deployment to Micro.blog when template files change.
+
+### How It Works
+
+Changes to theme files automatically trigger deployment:
+- `layouts/**` - Template files
+- `static/**` - CSS, JavaScript, images
+- `theme.toml` - Theme configuration
+- `plugin.json` - Plugin configuration
+
+The workflow:
+1. Authenticates to Micro.blog via email (using cached session cookie)
+2. Triggers theme reload from GitHub
+3. Rebuilds your site
+4. Monitors completion (~1-2 minutes)
+
+### Setup Instructions
+
+**Required GitHub Secrets & Variables:**
+
+Secrets (encrypted):
+- `GMAIL_APP_PASSWORD` - Gmail app password for authentication
+
+Variables (configuration):
+- `GMAIL_EMAIL` - Gmail address for receiving sign-in emails
+- `MICROBLOG_EMAIL` - Your Micro.blog account email
+- `MICROBLOG_SITE_ID` - Your Micro.blog site ID
+- `MICROBLOG_THEME_ID` - Your theme ID
+
+**Step-by-step setup:**
+
+1. **Get Gmail App Password**:
+   - Enable 2-factor auth at https://myaccount.google.com/security
+   - Create app password at https://myaccount.google.com/apppasswords
+   - Name it "Micro.blog Theme Deploy"
+
+2. **Find Your Micro.blog IDs**:
+   - **Site ID**: Visit https://micro.blog/account, check site settings URL
+   - **Theme ID**: Go to Design → Edit Custom Themes, check theme URL
+
+3. **Configure GitHub Secrets**:
+   - Go to your repo Settings → Secrets and variables → Actions
+   - Add secret: `GMAIL_APP_PASSWORD`
+   - Add variables: `GMAIL_EMAIL`, `MICROBLOG_EMAIL`, `MICROBLOG_SITE_ID`, `MICROBLOG_THEME_ID`
+
+4. **Test Deployment**:
+   - Make a small change to a template file
+   - Commit and push to `main` branch
+   - Check Actions tab for workflow status
+
+**Manual Deployment:**
+
+Trigger deployment manually from the Actions tab → "Deploy to Micro.blog" → "Run workflow"
+
+For more details, see [.github/deploy/README.md](.github/deploy/README.md).
+
 ## License
 
 MIT License - See [LICENSE](LICENSE) for details

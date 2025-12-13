@@ -4,3 +4,5 @@ data/
 content/
 .DS_Store
 .env
+backups/
+.session-cookie
