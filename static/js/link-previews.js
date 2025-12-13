@@ -172,7 +172,19 @@
               if (videoId) {
                 console.log('Creating YouTube embed for:', videoId);
                 const embed = createYouTubeEmbed(link, videoId);
-                p.replaceWith(embed);
+                
+                // If there's text before the link, preserve it
+                if (isTrailingLink) {
+                  const textBefore = textContent.substring(0, textContent.length - linkText.length).trim();
+                  const textP = document.createElement('p');
+                  textP.textContent = textBefore;
+                  
+                  // Replace paragraph with text and embed
+                  p.replaceWith(textP, embed);
+                } else {
+                  // Just replace with embed
+                  p.replaceWith(embed);
+                }
                 continue;
               }
             }
