@@ -1,13 +1,12 @@
-# Dougie
+# doughatcher dotcom
 
-**A versatile micro.blog theme by Doug Hatcher (who definitely doesn't go by Dougie)**
+**A versatile micro.blog theme by Doug Hatcher**
 
-Dougie is a multi-purpose theme designed to power different types of micro.blog sites with the same codebase. Whether you need a microblog, a publication site, or a one-page portfolio, Dougie adapts to your needs through configuration alone.
+Dotcom is a multi-purpose theme designed to power different types of micro.blog sites with the same codebase. Whether you need a microblog, a publication site, or a one-page portfolio, Dotcom adapts to your needs through configuration alone.
 
 ## Philosophy
 
-One theme, multiple personalities. Dougie transforms based on your configuration - no code changes required. Just adjust the settings in your `config.json` to switch between layouts and modes.
-
+One theme, multiple personalities. Dotcom transforms based on your configuration - no code changes required. Just adjust the settings in your `config.json` to switch between layouts and modes.
 ## Modes
 
 ### 1. **Microblog Mode** (Default)
