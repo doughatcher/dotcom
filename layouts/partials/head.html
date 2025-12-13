@@ -33,9 +33,11 @@
     {{ end }}
     
     <!-- JavaScript -->
-    <script src="{{ "js/responsive-content.js" | relURL }}" defer></script>
-    <script src="{{ "js/link-previews.js" | relURL }}" defer></script>
-    <script src="{{ "js/publication-thumbnails.js" | relURL }}" defer></script>
+    {{ $cacheBust := now.Unix }}
+    <script src="{{ "js/fix-image-urls.js" | relURL }}?v={{ $cacheBust }}" defer></script>
+    <script src="{{ "js/responsive-content.js" | relURL }}?v={{ $cacheBust }}" defer></script>
+    <script src="{{ "js/link-previews.js" | relURL }}?v={{ $cacheBust }}" defer></script>
+    <script src="{{ "js/publication-thumbnails.js" | relURL }}?v={{ $cacheBust }}" defer></script>
     
     <!-- CSS Variables for customization -->
     <style>

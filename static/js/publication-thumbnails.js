@@ -110,10 +110,12 @@
         const publicationItems = document.querySelectorAll('.publication-item, .publication-sidebar-item');
         
         for (const item of publicationItems) {
-            // Check if item already has a thumbnail
+            // Check if item already has a thumbnail with a valid src
             const existingThumbnail = item.querySelector('.publication-thumbnail img, .publication-sidebar-thumbnail img');
-            if (existingThumbnail && existingThumbnail.src && !existingThumbnail.src.includes('micro.blog/thumbnails')) {
-                continue; // Skip if already has a non-micro.blog thumbnail
+            if (existingThumbnail && existingThumbnail.src && existingThumbnail.src.startsWith('http')) {
+                // Skip if already has a thumbnail - don't replace existing images
+                console.log('Skipping item - already has thumbnail:', existingThumbnail.src);
+                continue;
             }
 
             // Get the publication link

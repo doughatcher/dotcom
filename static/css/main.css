@@ -886,26 +886,6 @@ a:hover {
   border-color: hsl(var(--primary) / 0.5);
 }
 
-/* YouTube embed styling */
-.youtube-embed-container {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%; /* 16:9 aspect ratio */
-  margin: 1.5rem 0;
-  border-radius: 0.75rem;
-  overflow: hidden;
-  background: hsl(var(--muted) / 0.3);
-}
-
-.youtube-embed-container iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border: none;
-}
-
 .post-meta {
   font-size: 0.875rem;
   color: hsl(var(--muted-foreground));
@@ -2336,4 +2316,31 @@ sup a {
     --input: 217.2 32.6% 17.5%;
     --ring: 224.3 76.3% 94.1%;
   }
+}
+
+/* YouTube Embed Styling */
+.youtube-embed-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; /* 16:9 aspect ratio */
+  margin: 1.5rem 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background-color: hsl(var(--muted) / 0.3);
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+.youtube-embed-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Ensure YouTube embeds look good in micro-posts */
+.micro-post .youtube-embed-container {
+  margin: 1rem 0;
+  border-radius: 0.5rem;
 }
