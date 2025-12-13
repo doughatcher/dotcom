@@ -14,6 +14,48 @@
     }
   }
 
+  // Function to extract YouTube video ID
+  function getYouTubeId(url) {
+    try {
+      const urlObj = new URL(url);
+      if (urlObj.hostname.includes('youtube.com')) {
+        return urlObj.searchParams.get('v');
+      } else if (urlObj.hostname.includes('youtu.be')) {
+        return urlObj.pathname.slice(1);
+      }
+    } catch (e) {
+      return null;
+    }
+    return null;
+  }
+
+  // Function to check if URL is a YouTube video
+  function isYouTubeUrl(url) {
+    const domain = getDomain(url);
+    return domain.includes('youtube.com') || domain.includes('youtu.be');
+  }
+
+  // Function to check if URL is a Reddit URL
+  function isRedditUrl(url) {
+    const domain = getDomain(url);
+    return domain.includes('reddit.com');
+  }
+
+  // Function to create YouTube embed
+  function createYouTubeEmbed(link, videoId) {
+    const container = document.createElement('div');
+    container.className = 'youtube-embed-container';
+    container.innerHTML = `
+      <iframe 
+        src="https://www.youtube-nocookie.com/embed/${videoId}" 
+        frameborder="0" 
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+        allowfullscreen
+      ></iframe>
+    `;
+    return container;
+  }
+
   // Function to create preview card with metadata
   function createPreviewCard(link, metadata) {
     const url = link.href;
@@ -57,6 +99,68 @@
   // Fetch link metadata using LinkPreview API
   async function fetchMetadata(url) {
     try {
+      // For Reddit URLs, try to get JSON data first
+      if (isRedditUrl(url)) {
+        try {
+          // Reddit share URLs need special handling - fetch and follow redirect
+          let redditJsonUrl = url;
+          
+          // If it's a share URL, we need to fetch it first to get the real URL
+          if (url.includes('/s/')) {
+            console.log('Detected Reddit share URL, fetching actual post URL...');
+            // Use a CORS proxy or let the microlink API handle it
+            const microlinkUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}&meta=false&screenshot=false&video=false`;
+            const redirectResponse = await fetch(microlinkUrl);
+            if (redirectResponse.ok) {
+              const redirectData = await redirectResponse.json();
+              if (redirectData.status === 'success' && redirectData.data.url) {
+                redditJsonUrl = redirectData.data.url;
+                console.log('Resolved Reddit URL to:', redditJsonUrl);
+              }
+            }
+          }
+          
+          // Try to get Reddit JSON data
+          const jsonUrl = redditJsonUrl.endsWith('/') ? redditJsonUrl + '.json' : redditJsonUrl + '.json';
+          console.log('Fetching Reddit JSON from:', jsonUrl);
+          
+          const redditResponse = await fetch(jsonUrl);
+          
+          if (redditResponse.ok) {
+            const redditData = await redditResponse.json();
+            console.log('Reddit JSON data:', redditData);
+            
+            // Extract post data from Reddit JSON
+            if (redditData && redditData[0] && redditData[0].data && redditData[0].data.children) {
+              const post = redditData[0].data.children[0].data;
+              
+              // Get the best quality image
+              let image = null;
+              if (post.preview && post.preview.images && post.preview.images[0]) {
+                // Use the highest resolution image available
+                const images = post.preview.images[0];
+                if (images.source && images.source.url) {
+                  image = images.source.url.replace(/&amp;/g, '&');
+                } else if (images.resolutions && images.resolutions.length > 0) {
+                  const highRes = images.resolutions[images.resolutions.length - 1];
+                  image = highRes.url.replace(/&amp;/g, '&');
+                }
+              } else if (post.thumbnail && post.thumbnail.startsWith('http')) {
+                image = post.thumbnail;
+              }
+              
+              return {
+                title: post.title || getDomain(url),
+                description: post.selftext ? post.selftext.substring(0, 300) : '',
+                image: image
+              };
+            }
+          }
+        } catch (redditError) {
+          console.log('Reddit JSON fetch failed, falling back to microlink:', redditError);
+        }
+      }
+      
       // Using microlink.io API - reliable and has good free tier
       const apiUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}`;
       const response = await fetch(apiUrl);
@@ -89,7 +193,7 @@
   // Find all standalone links in post bodies and convert to preview cards
   async function enhanceLinks() {
     console.log('Enhancing links...');
-    const postBodies = document.querySelectorAll('.post-body, .post-content');
+    const postBodies = document.querySelectorAll('.post-body, .post-content, .e-content');
     console.log('Found', postBodies.length, 'post bodies/content areas');
     
     let linkCount = 0;
@@ -105,8 +209,25 @@
         
         const link = links[0];
         
-        // Skip if paragraph has images
-        if (p.querySelector('img')) continue;
+        // Skip if paragraph has images (but not if it's inside a link preview card)
+        if (p.querySelector('img') && !link.classList.contains('link-preview-card')) continue;
+        
+        // For existing link-preview-cards, only re-process if it's a Reddit URL with poor metadata
+        const isExistingCard = link.classList.contains('link-preview-card');
+        if (isExistingCard) {
+          // Check if it's a Reddit link with poor metadata (title is just the share code)
+          if (isRedditUrl(link.href)) {
+            const titleEl = link.querySelector('.link-preview-title');
+            if (titleEl && titleEl.textContent.match(/^[A-Za-z0-9]+$/)) {
+              console.log('Re-processing poor Reddit preview:', link.href);
+              // Continue to re-process this card
+            } else {
+              continue; // Skip if it already has good metadata
+            }
+          } else {
+            continue; // Skip non-Reddit cards that already exist
+          }
+        }
         
         const textContent = p.textContent.trim();
         const linkText = link.textContent.trim();
@@ -121,15 +242,36 @@
                               textContent.length > linkText.length;
         
         if (isStandalone || isTrailingLink) {
-          console.log('Fetching preview for:', link.href);
+          console.log('Processing link:', link.href);
           linkCount++;
           
           // Add loading indicator
           p.classList.add('link-preview-loading');
           
           try {
-            // Fetch metadata
+            // Check if it's a YouTube URL (use actual href, not text)
+            if (isYouTubeUrl(link.href)) {
+              const videoId = getYouTubeId(link.href);
+              if (videoId) {
+                console.log('Creating YouTube embed for:', videoId);
+                const embed = createYouTubeEmbed(link, videoId);
+                
+                // If there's text before the link, preserve it
+                if (isTrailingLink) {
+                  const textBefore = textContent.substring(0, textContent.length - linkText.length).trim();
+                  const textP = document.createElement('p');
+                  textP.textContent = textBefore;
+                  p.replaceWith(textP, embed);
+                } else {
+                  p.replaceWith(embed);
+                }
+                continue;
+              }
+            }
+            
+            // Fetch metadata for other URLs (use actual href)
             const metadata = await fetchMetadata(link.href);
+            console.log('Fetched metadata:', metadata);
             const card = createPreviewCard(link, metadata);
             
             // If there's text before the link, preserve it

@@ -1,17 +1,16 @@
 {{ define "main" }}
-
-	<div class="photos-grid-container" style="display: grid; grid-column-gap: 15px; grid-row-gap: 15px; grid-template-columns: 33% 33% 33%;">
-
-	{{- $list := where .Site.Pages ".Params.photos" "!=" nil -}}
-	{{- $len := (len $list) -}}
-	{{ range $index, $value := $list }}
-		<a href="{{ .Permalink }}">
-			{{ range first 1 .Params.photos }}
-				<img src="{{ . }}" width="300" height="300" style="border-radius: 5px; max-width: 100%; height: auto;" class="photos-grid-item" loading="lazy" />
-			{{ end }}
-		</a>
-	{{ end }}
-
-	</div>
-
+<div class="photos-page">
+    <h1>Photos</h1>
+    <div class="photos-grid">
+        {{ range .Pages }}
+        {{ if .Params.images }}
+        {{ range .Params.images }}
+        <div class="photo-item">
+            <img src="{{ . }}" alt="Photo" loading="lazy">
+        </div>
+        {{ end }}
+        {{ end }}
+        {{ end }}
+    </div>
+</div>
 {{ end }}
