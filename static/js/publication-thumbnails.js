@@ -67,6 +67,13 @@
         const url = link.getAttribute('href');
         const title = link.textContent.trim();
 
+        // Fix image URL if it's a local uploads/ path
+        let imageUrl = thumbnailData.image;
+        if (imageUrl.includes('/uploads/')) {
+            // Rewrite uploads/ paths to CDN
+            imageUrl = imageUrl.replace(/^.*?\/uploads\//, 'https://cdn.uploads.micro.blog/264500/');
+        }
+
         // Check if thumbnail already exists
         let thumbnailContainer = item.querySelector('.publication-thumbnail, .publication-sidebar-thumbnail');
         
@@ -109,8 +116,8 @@
             thumbnailLink.appendChild(img);
         }
 
-        // Update image source
-        img.src = thumbnailData.image;
+        // Update image source with fixed URL
+        img.src = imageUrl;
         
         // Add loaded class for animation
         thumbnailContainer.classList.add('thumbnail-loaded');
