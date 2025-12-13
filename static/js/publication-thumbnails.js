@@ -129,16 +129,12 @@
             if (!link) continue;
 
             const url = link.getAttribute('href');
-            
-            // Only process external URLs
-            if (!url || !url.startsWith('http') || url.includes(window.location.hostname)) {
-                continue;
-            }
+            if (!url) continue;
 
             // Check if item has a Micro.blog generated thumbnail (these are screenshot-style)
             const existingThumbnail = item.querySelector('.publication-thumbnail img, .publication-sidebar-thumbnail img');
             if (existingThumbnail && existingThumbnail.src) {
-                // Replace Micro.blog thumbnails with better og:images
+                // Replace Micro.blog thumbnails with better images
                 const isMicroBlogThumbnail = existingThumbnail.src.includes('micro.blog/thumbnails') || 
                                             existingThumbnail.src.includes('s3.amazonaws.com/micro.blog/thumbnails');
                 
@@ -148,29 +144,62 @@
                     continue;
                 }
                 
-                // If it's a Micro.blog thumbnail, we'll replace it below
                 console.log('Will replace Micro.blog thumbnail for:', url);
             }
 
-            console.log(`Fetching thumbnail for: ${url}`);
+            // Determine if this is an internal or external URL
+            const isExternal = url.startsWith('http') && !url.includes(window.location.hostname);
             
-            // Add loading state
-            item.classList.add('thumbnail-loading');
-            
-            try {
-                const thumbnailData = await fetchThumbnail(url);
+            if (isExternal) {
+                // For external URLs, fetch og:image
+                console.log(`Fetching og:image for external URL: ${url}`);
                 
-                if (thumbnailData) {
-                    updatePublicationThumbnail(item, thumbnailData);
+                item.classList.add('thumbnail-loading');
+                
+                try {
+                    const thumbnailData = await fetchThumbnail(url);
+                    
+                    if (thumbnailData) {
+                        updatePublicationThumbnail(item, thumbnailData);
+                    }
+                } catch (error) {
+                    console.error('Error updating thumbnail:', error);
+                } finally {
+                    item.classList.remove('thumbnail-loading');
                 }
-            } catch (error) {
-                console.error('Error updating thumbnail:', error);
-            } finally {
-                item.classList.remove('thumbnail-loading');
+                
+                // Add small delay between requests to avoid rate limiting
+                await new Promise(resolve => setTimeout(resolve, 500));
+            } else {
+                // For internal URLs, fetch the page and extract the first image
+                console.log(`Fetching first image from internal post: ${url}`);
+                
+                item.classList.add('thumbnail-loading');
+                
+                try {
+                    const response = await fetch(url);
+                    const html = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    // Find the first image in the post content
+                    const postImage = doc.querySelector('.post-body img, .post-content img');
+                    
+                    if (postImage && postImage.src) {
+                        const thumbnailData = {
+                            image: postImage.src,
+                            title: link.textContent.trim(),
+                            description: null
+                        };
+                        updatePublicationThumbnail(item, thumbnailData);
+                        console.log('Updated internal post thumbnail with:', postImage.src);
+                    }
+                } catch (error) {
+                    console.error('Error fetching internal post:', error);
+                } finally {
+                    item.classList.remove('thumbnail-loading');
+                }
             }
-            
-            // Add small delay between requests to avoid rate limiting
-            await new Promise(resolve => setTimeout(resolve, 500));
         }
     }
 
