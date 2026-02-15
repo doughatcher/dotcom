@@ -126,13 +126,17 @@ class MicroblogBackup:
             print(f"❌ Error connecting to Gmail: {e}")
             return None
     
-    def poll_email_for_export(self, export_time, max_retries=25, retry_interval=12):
-        """Poll Gmail for export ready notification and extract download link"""
+    def poll_email_for_export(self, export_time, max_retries=50, retry_interval=24):
+        """Poll Gmail for export ready notification and extract download link
+        
+        Default timeout: 50 retries × 24s = 20 minutes
+        This handles slow Micro.blog export processing during high load.
+        """
         print(f"📧 Polling Gmail for export notification (up to {max_retries} retries, {retry_interval}s apart)...")
         print(f"   Total timeout: {max_retries * retry_interval // 60} minutes")
         
-        # Search emails from 1 minute before export request
-        search_start = export_time - timedelta(minutes=1)
+        # Search emails from 10 minutes before export request (in case of clock skew)
+        search_start = export_time - timedelta(minutes=10)
         
         mail = self.connect_to_gmail()
         if not mail:
@@ -167,8 +171,8 @@ class MicroblogBackup:
                         print(f"   ℹ️  Attempt {attempt}/{max_retries}: No export emails found yet")
                         continue
                     
-                    # Get last 20 emails (most recent first)
-                    email_ids = email_ids[-20:][::-1]
+                    # Get last 50 emails (most recent first) to handle busy inboxes
+                    email_ids = email_ids[-50:][::-1]
                     
                     print(f"   📬 Found {len(email_ids)} export emails, checking recent ones...")
                     
@@ -394,7 +398,7 @@ class MicroblogBackup:
                 shutil.rmtree(temp_dir)
             return False
     
-    def backup(self, export=True, download=True, extract=True, backup_existing=True):
+    def backup(self, export=True, download=True, extract=True, backup_existing=True, max_retries=50, retry_interval=24):
         """Execute full backup sequence"""
         print("🚀 Micro.blog Backup")
         print("=" * 60)
@@ -419,7 +423,7 @@ class MicroblogBackup:
             # Step 2: Poll email for download link
             if download and export_time:
                 print()
-                download_url = self.poll_email_for_export(export_time)
+                download_url = self.poll_email_for_export(export_time, max_retries=max_retries, retry_interval=retry_interval)
                 if not download_url:
                     success = False
                     download = False
@@ -464,7 +468,9 @@ def main():
     parser.add_argument('--extract-only', help='Extract content from existing ZIP file')
     parser.add_argument('--all', action='store_true', help='Run full backup (export + download + extract)')
     parser.add_argument('--no-backup', action='store_true', help='Skip backing up existing content before extraction')
-    
+    parser.add_argument('--max-retries', type=int, default=50, help='Max retries for email polling (default: 50)')
+    parser.add_argument('--retry-interval', type=int, default=24, help='Seconds between retries (default: 24)')
+
     args = parser.parse_args()
     
     # If no specific action specified, show help
@@ -516,14 +522,18 @@ def main():
                 export=True,
                 download=True,
                 extract=True,
-                backup_existing=not args.no_backup
+                backup_existing=not args.no_backup,
+                max_retries=args.max_retries,
+                retry_interval=args.retry_interval
             )
         elif args.export_only:
             success = backup.backup(
                 export=True,
                 download=True,
                 extract=False,
-                backup_existing=False
+                backup_existing=False,
+                max_retries=args.max_retries,
+                retry_interval=args.retry_interval
             )
         else:
             success = True

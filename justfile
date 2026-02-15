@@ -45,6 +45,10 @@ git-config:
         exit 1
     fi
 
+install:
+    sudo apt-get update && sudo apt-get install -y python3-requests python3-dotenv
+    @echo "Installation complete."
+
 # Show available commands
 help:
     just --list
