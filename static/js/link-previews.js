@@ -35,6 +35,12 @@
     return domain.includes('youtube.com') || domain.includes('youtu.be');
   }
 
+  // Function to check if URL is a Reddit post
+  function isRedditUrl(url) {
+    const domain = getDomain(url);
+    return domain.includes('reddit.com') || domain.includes('redd.it');
+  }
+
   // Function to create YouTube embed
   function createYouTubeEmbed(link, videoId) {
     const container = document.createElement('div');
@@ -54,10 +60,10 @@
   function createPreviewCard(link, metadata) {
     const url = link.href;
     const domain = getDomain(url);
-    
+
     const card = document.createElement('a');
     card.href = url;
-    card.className = 'link-preview-card';
+    card.className = isRedditUrl(url) ? 'link-preview-card reddit-preview' : 'link-preview-card';
     card.target = '_blank';
     card.rel = 'noopener';
     

@@ -812,7 +812,7 @@ a:hover {
 
 .link-preview-image {
   width: 100%;
-  height: 200px;
+  aspect-ratio: 2 / 1;
   overflow: hidden;
   background: hsl(var(--muted) / 0.3);
 }
@@ -826,6 +826,25 @@ a:hover {
 
 .link-preview-card:hover .link-preview-image img {
   transform: scale(1.05);
+}
+
+/* Reddit posts: image is the dominant content */
+.link-preview-card.reddit-preview .link-preview-image {
+  aspect-ratio: 16 / 9;
+}
+
+.link-preview-card.reddit-preview .link-preview-content {
+  padding: 0.875rem 1.25rem;
+}
+
+.link-preview-card.reddit-preview .link-preview-title {
+  font-size: 1rem;
+  -webkit-line-clamp: 2;
+}
+
+.link-preview-card.reddit-preview .link-preview-description {
+  -webkit-line-clamp: 1;
+  margin-bottom: 0.5rem;
 }
 
 .link-preview-content {
