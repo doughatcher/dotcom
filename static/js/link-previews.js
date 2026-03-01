@@ -41,6 +41,51 @@
     return domain.includes('reddit.com') || domain.includes('redd.it');
   }
 
+  // Extract a human-readable title from a Reddit URL slug
+  // e.g. /r/sub/comments/abc123/my_cool_post/ → "my cool post"
+  function getRedditTitleFromUrl(url) {
+    try {
+      const parts = new URL(url).pathname.split('/').filter(Boolean);
+      const commentsIdx = parts.indexOf('comments');
+      if (commentsIdx !== -1 && parts[commentsIdx + 2]) {
+        return decodeURIComponent(parts[commentsIdx + 2]).replace(/_/g, ' ');
+      }
+    } catch (e) {}
+    return null;
+  }
+
+  // Attempt to embed a Reddit post using Reddit's native oEmbed + widgets.js.
+  // Returns a DOM element on success, null on failure (caller falls back to preview card).
+  async function createRedditEmbed(link) {
+    const url = link.href;
+    try {
+      const oembedUrl = `https://www.reddit.com/oembed?url=${encodeURIComponent(url)}`;
+      const res = await fetch(oembedUrl);
+      if (!res.ok) throw new Error('oEmbed ' + res.status);
+      const data = await res.json();
+      if (!data.html) throw new Error('no html');
+
+      const wrapper = document.createElement('div');
+      wrapper.className = 'reddit-embed-container';
+      // Insert the blockquote but exclude the inline <script> tag —
+      // we load widgets.js ourselves once so it runs after all embeds are in the DOM.
+      wrapper.innerHTML = data.html.replace(/<script[\s\S]*?<\/script>/gi, '');
+
+      if (!document.querySelector('script[src*="embed.reddit.com/widgets.js"]')) {
+        const script = document.createElement('script');
+        script.src = 'https://embed.reddit.com/widgets.js';
+        script.async = true;
+        script.charset = 'UTF-8';
+        document.body.appendChild(script);
+      }
+
+      return wrapper;
+    } catch (e) {
+      console.warn('Reddit oEmbed failed, using preview card fallback:', e);
+      return null;
+    }
+  }
+
   // Function to create YouTube embed
   function createYouTubeEmbed(link, videoId) {
     const container = document.createElement('div');
@@ -178,13 +223,13 @@
               if (videoId) {
                 console.log('Creating YouTube embed for:', videoId);
                 const embed = createYouTubeEmbed(link, videoId);
-                
+
                 // If there's text before the link, preserve it
                 if (isTrailingLink) {
                   const textBefore = textContent.substring(0, textContent.length - linkText.length).trim();
                   const textP = document.createElement('p');
                   textP.textContent = textBefore;
-                  
+
                   // Replace paragraph with text and embed
                   p.replaceWith(textP, embed);
                 } else {
@@ -194,9 +239,40 @@
                 continue;
               }
             }
-            
+
+            // Reddit: use native oEmbed embed so video and images render properly
+            if (isRedditUrl(url)) {
+              const embed = await createRedditEmbed(link);
+              if (embed) {
+                if (isTrailingLink) {
+                  const textBefore = textContent.substring(0, textContent.length - linkText.length).trim();
+                  const textP = document.createElement('p');
+                  textP.textContent = textBefore;
+                  p.replaceWith(textP, embed);
+                } else {
+                  p.replaceWith(embed);
+                }
+                continue;
+              }
+              // oEmbed failed — fall through to preview card with fixed metadata
+            }
+
             // Fetch metadata for other links
             const metadata = await fetchMetadata(url);
+
+            // Reddit fallback: fix a hash-like title with the URL slug, and
+            // never show the site logo as the post image.
+            if (isRedditUrl(url)) {
+              const looksLikeHash = !metadata.title || /^[A-Za-z0-9_-]{6,20}$/.test(metadata.title.trim());
+              if (looksLikeHash) {
+                metadata.title = getRedditTitleFromUrl(url) || 'Reddit post';
+              }
+              // If the image is just the Reddit site logo, drop it
+              if (metadata.image && /redd(it|\.it)|snoo/i.test(metadata.image) && !metadata.image.includes('preview.redd.it')) {
+                metadata.image = null;
+              }
+            }
+
             const card = createPreviewCard(link, metadata);
             
             // If there's text before the link, preserve it
