@@ -54,34 +54,61 @@
     return null;
   }
 
-  // Attempt to embed a Reddit post using Reddit's native oEmbed + widgets.js.
-  // Returns a DOM element on success, null on failure (caller falls back to preview card).
+  // Use Reddit's public JSON API to build a proper post card.
+  // Returns a DOM element on success, null on failure (caller falls back to generic preview card).
   async function createRedditEmbed(link) {
     const url = link.href;
     try {
-      const oembedUrl = `https://www.reddit.com/oembed?url=${encodeURIComponent(url)}`;
-      const res = await fetch(oembedUrl);
-      if (!res.ok) throw new Error('oEmbed ' + res.status);
+      // Reddit serves JSON for any post by appending .json
+      const jsonUrl = url.replace(/\/?(\?.*)?$/, '.json$1');
+      const res = await fetch(jsonUrl, { headers: { 'Accept': 'application/json' } });
+      if (!res.ok) throw new Error('Reddit JSON ' + res.status);
       const data = await res.json();
-      if (!data.html) throw new Error('no html');
 
-      const wrapper = document.createElement('div');
-      wrapper.className = 'reddit-embed-container';
-      // Insert the blockquote but exclude the inline <script> tag —
-      // we load widgets.js ourselves once so it runs after all embeds are in the DOM.
-      wrapper.innerHTML = data.html.replace(/<script[\s\S]*?<\/script>/gi, '');
+      const post = data[0]?.data?.children?.[0]?.data;
+      if (!post) throw new Error('no post data');
 
-      if (!document.querySelector('script[src*="embed.reddit.com/widgets.js"]')) {
-        const script = document.createElement('script');
-        script.src = 'https://embed.reddit.com/widgets.js';
-        script.async = true;
-        script.charset = 'UTF-8';
-        document.body.appendChild(script);
+      const title = post.title || getRedditTitleFromUrl(url) || 'Reddit post';
+      const subreddit = post.subreddit ? `r/${post.subreddit}` : 'reddit.com';
+      const isVideo = post.is_video;
+
+      // Prefer the highest-res preview image; fall back to thumbnail
+      const badThumbnails = new Set(['self', 'default', 'nsfw', 'spoiler', 'image', '']);
+      const previewImg = post.preview?.images?.[0]?.resolutions?.slice(-1)[0]?.url?.replace(/&amp;/g, '&')
+        || post.preview?.images?.[0]?.source?.url?.replace(/&amp;/g, '&')
+        || null;
+      const thumbImg = post.thumbnail && !badThumbnails.has(post.thumbnail) ? post.thumbnail : null;
+      const image = previewImg || thumbImg;
+
+      const card = document.createElement('a');
+      card.href = url;
+      card.className = 'link-preview-card reddit-preview';
+      card.target = '_blank';
+      card.rel = 'noopener';
+
+      let html = '';
+      if (image) {
+        html += `
+          <div class="link-preview-image">
+            ${isVideo ? '<div class="reddit-play-badge">▶</div>' : ''}
+            <img src="${image}" alt="${title}" loading="lazy" onerror="this.parentElement.style.display='none'">
+          </div>`;
       }
-
-      return wrapper;
+      html += `
+        <div class="link-preview-content">
+          <div class="link-preview-title">${title}</div>
+          <div class="link-preview-url">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+            </svg>
+            ${subreddit}
+          </div>
+        </div>`;
+      card.innerHTML = html;
+      return card;
     } catch (e) {
-      console.warn('Reddit oEmbed failed, using preview card fallback:', e);
+      console.warn('Reddit JSON API failed, using preview card fallback:', e);
       return null;
     }
   }
@@ -261,14 +288,13 @@
             const metadata = await fetchMetadata(url);
 
             // Reddit fallback: fix a hash-like title with the URL slug, and
-            // never show the site logo as the post image.
+            // never show the Reddit brand/logo image (redditstatic.com) as the post image.
             if (isRedditUrl(url)) {
               const looksLikeHash = !metadata.title || /^[A-Za-z0-9_-]{6,20}$/.test(metadata.title.trim());
               if (looksLikeHash) {
                 metadata.title = getRedditTitleFromUrl(url) || 'Reddit post';
               }
-              // If the image is just the Reddit site logo, drop it
-              if (metadata.image && /redd(it|\.it)|snoo/i.test(metadata.image) && !metadata.image.includes('preview.redd.it')) {
+              if (metadata.image && metadata.image.includes('redditstatic.com')) {
                 metadata.image = null;
               }
             }
