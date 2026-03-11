@@ -1,8 +1,26 @@
+# Hugo
 .hugo_build.lock
 public/
-data/
-content/
+
+# OS
 .DS_Store
+._*
+
+# Secrets
 .env
-backups/
 .session-cookie
+
+# Content and data (managed by Micro.blog, not git)
+content/
+data/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# Node
+node_modules/
+
+# Backups
+backups/

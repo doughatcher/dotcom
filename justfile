@@ -1,5 +1,20 @@
 # Micro.blog Development Tasks
 
+# Load environment variables from .env file
+set dotenv-load
+
+# Default recipe (list available recipes)
+default:
+    @just --list
+
+# Build the Hugo site
+build:
+    hugo
+
+# Run Hugo development server
+serve:
+    hugo server --disableFastRender --noHTTPCache
+
 # Authenticate to Micro.blog via email
 auth:
     python3 .github/deploy/microblog_auth.py
@@ -45,8 +60,9 @@ git-config:
         exit 1
     fi
 
-install:
-    sudo apt-get update && sudo apt-get install -y python3-requests python3-dotenv
+# Install Python dependencies
+install: git-config
+    pip3 install --user requests python-dotenv
     @echo "Installation complete."
 
 # Show available commands
