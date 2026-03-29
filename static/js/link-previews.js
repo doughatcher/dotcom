@@ -92,7 +92,7 @@
     // Add image if available
     if (metadata.image) {
       html += `
-        <div class="link-preview-image">
+        <div class="link-preview-image" style="--thumb: url('${metadata.image}')">
           <img src="${metadata.image}" alt="${metadata.title || domain}" loading="lazy" onerror="this.parentElement.remove()">
         </div>
       `;
