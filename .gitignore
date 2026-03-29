@@ -22,5 +22,8 @@ __pycache__/
 # Node
 node_modules/
 
+# Wrangler
+.wrangler/
+
 # Backups
 backups/
