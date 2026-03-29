@@ -87,15 +87,7 @@ jobs:
               continue
             fi
 
-            PAYLOAD=$(python3 -c "
-import json, sys
-print(json.dumps({
-  'title': sys.argv[1],
-  'image': sys.argv[2] if sys.argv[2] else None,
-  'domain': sys.argv[3],
-  'description': None
-}))
-" "$TITLE" "$IMAGE" "$SUBREDDIT")
+            PAYLOAD=$(python3 -c "import json,sys; print(json.dumps({'title':sys.argv[1],'image':sys.argv[2] if sys.argv[2] else None,'domain':sys.argv[3],'description':None}))" "$TITLE" "$IMAGE" "$SUBREDDIT")
 
             CACHE_KEY="preview:$BASE_URL"
             npx wrangler kv key put "$CACHE_KEY" "$PAYLOAD" \

@@ -183,10 +183,7 @@ jobs:
             SUBREDDIT=$(echo "$BASE_URL" | grep -o 'r/[^/]*' | head -1 || echo "reddit.com")
             [ -z "$TITLE" ] && continue
 
-            PAYLOAD=$(python3 -c "
-import json, sys
-print(json.dumps({'title':sys.argv[1],'image':sys.argv[2] if sys.argv[2] else None,'domain':sys.argv[3],'description':None}))
-" "$TITLE" "$IMAGE" "$SUBREDDIT")
+            PAYLOAD=$(python3 -c "import json,sys; print(json.dumps({'title':sys.argv[1],'image':sys.argv[2] if sys.argv[2] else None,'domain':sys.argv[3],'description':None}))" "$TITLE" "$IMAGE" "$SUBREDDIT")
 
             npx wrangler kv key put "preview:$BASE_URL" "$PAYLOAD" \
               --namespace-id="$KV_NAMESPACE_ID" --remote 2>/dev/null && CACHED=$((CACHED+1)) || true
