@@ -45,6 +45,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Download latest backup to scan for Reddit URLs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          mkdir -p /tmp/content-scan
+          # Try to download the latest backup release ZIP
+          gh release download --repo doughatcher/dotcom --pattern "*.zip" \
+            --dir /tmp/backup --clobber 2>/dev/null || true
+          ZIP=$(ls /tmp/backup/*.zip 2>/dev/null | head -1)
+          if [ -n "$ZIP" ]; then
+            echo "Extracting $ZIP..."
+            unzip -q "$ZIP" -d /tmp/content-scan || true
+          else
+            echo "No backup release found — KV cache will not be updated"
+          fi
+
       - name: Pre-populate KV cache with Reddit metadata
         env:
           CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
@@ -53,10 +69,8 @@ jobs:
           KV_NAMESPACE_ID: f48049994ef74c418fe7b8f491f6e905
         run: |
           npm install -g wrangler
-          cd apps/link-preview-service
-
-          echo "Scanning content for Reddit URLs..."
-          URLS=$(grep -r -h 'https://\(www\.\)\?reddit\.com[^ )>]*' ../../content \
+          echo "Scanning /tmp/content-scan for Reddit URLs..."
+          URLS=$(grep -r -h 'https://\(www\.\)\?reddit\.com[^ )>]*' /tmp/content-scan \
             --include="*.md" -o 2>/dev/null | sort -u || true)
           COUNT=$(echo "$URLS" | grep -c . || echo 0)
           echo "Found $COUNT Reddit URL(s)"
