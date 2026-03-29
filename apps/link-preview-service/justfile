@@ -1,0 +1,85 @@
+# Link Preview Service — Cloudflare Worker
+# Provides server-side metadata fetching for doughatcher.com link preview cards.
+
+default:
+    @just --list
+
+# Install dependencies
+install:
+    npm install
+
+# Start local dev server (port 8790)
+dev:
+    wrangler dev --ip 0.0.0.0 --port 8790
+
+# Test a URL against the local dev server
+test-url URL:
+    curl -s "http://localhost:8790/preview?url={{URL}}" | python3 -m json.tool
+
+# Test a URL against production
+test-prod-url URL:
+    curl -s "https://doughatcher-link-preview.doug-hatcher.workers.dev/preview?url={{URL}}" | python3 -m json.tool
+
+# Deploy to Cloudflare Workers
+deploy:
+    wrangler deploy
+
+# Pre-populate KV cache with Reddit metadata from content directory.
+# Run this after a backup/restore so the Worker has thumbnails for all Reddit posts.
+# Requires CLOUDFLARE_API_KEY, CLOUDFLARE_EMAIL, CLOUDFLARE_ACCOUNT_ID env vars.
+reddit-cache CONTENT_DIR="../../content":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    KV_ID="f48049994ef74c418fe7b8f491f6e905"
+    echo "Scanning content for Reddit URLs..."
+    URLS=$(grep -r -h 'https://\(www\.\)\?reddit\.com[^ )>]*' "{{CONTENT_DIR}}" --include="*.md" -o | sort -u || true)
+    COUNT=$(echo "$URLS" | grep -c . || true)
+    echo "Found $COUNT Reddit URLs"
+    echo ""
+    for URL in $URLS; do
+        # Resolve /s/ share links
+        if echo "$URL" | grep -q '/s/'; then
+            RESOLVED=$(curl -sI "$URL" -A "Mozilla/5.0" -L --max-redirs 3 2>/dev/null | grep -i "^location:" | tail -1 | sed 's/location: //i' | tr -d '\r' || echo "")
+            if [ -n "$RESOLVED" ]; then
+                URL="$RESOLVED"
+            fi
+        fi
+        # Strip to base post URL (no query params)
+        BASE_URL=$(echo "$URL" | cut -d'?' -f1 | sed 's|/$||')
+        if ! echo "$BASE_URL" | grep -q '/comments/'; then
+            continue
+        fi
+        echo -n "  Fetching: $BASE_URL ... "
+        # Fetch from old.reddit.com which has OG tags
+        OLD_URL=$(echo "$BASE_URL" | sed 's|www\.reddit\.com|old.reddit.com|')
+        TITLE=$(curl -s "$OLD_URL" -A "Mozilla/5.0" -H "Accept: text/html" | \
+            grep -o 'property="og:title" content="[^"]*"' | head -1 | sed 's/.*content="//;s/"//')
+        IMAGE=$(curl -s "$OLD_URL" -A "Mozilla/5.0" -H "Accept: text/html" | \
+            grep -o 'property="og:image" content="[^"]*"' | head -1 | sed 's/.*content="//;s/"//' | sed 's/&amp;/\&/g')
+        SUBREDDIT=$(echo "$BASE_URL" | grep -o 'r/[^/]*' | head -1)
+        if [ -z "$TITLE" ]; then
+            echo "skipped (no title)"
+            continue
+        fi
+        PAYLOAD=$(python3 -c "import json,sys; print(json.dumps({'title':sys.argv[1],'image':sys.argv[2],'domain':sys.argv[3],'description':None}))" "$TITLE" "$IMAGE" "$SUBREDDIT")
+        CACHE_KEY="preview:$BASE_URL"
+        wrangler kv key put "$CACHE_KEY" "$PAYLOAD" --binding=PREVIEW_CACHE --remote 2>/dev/null || \
+          CLOUDFLARE_ACCOUNT_ID="${CLOUDFLARE_ACCOUNT_ID:-}" wrangler kv key put "$CACHE_KEY" "$PAYLOAD" \
+            --namespace-id="$KV_ID" --remote 2>/dev/null || true
+        echo "cached ($SUBREDDIT)"
+    done
+    echo ""
+    echo "Done."
+
+# Show info
+info:
+    @echo "Link Preview Service"
+    @echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    @echo "Local:  http://localhost:8790"
+    @echo "Prod:   https://preview.doughatcher.com"
+    @echo "Dev:    https://doughatcher-link-preview.doug-hatcher.workers.dev"
+    @echo ""
+    @echo "Endpoints:"
+    @echo "  GET /preview?url=<encoded-url>  — fetch link metadata"
+    @echo ""
+    @echo "KV namespace: f48049994ef74c418fe7b8f491f6e905"

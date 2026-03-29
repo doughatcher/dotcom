@@ -145,6 +145,54 @@ jobs:
           
           echo "✅ Release created: ${{ steps.backup-metadata.outputs.tag }}"
       
+      - name: Update Reddit preview cache
+        if: success()
+        env:
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          KV_NAMESPACE_ID: f48049994ef74c418fe7b8f491f6e905
+        run: |
+          echo "🔍 Extracting backup to scan for Reddit URLs..."
+          mkdir -p /tmp/content-scan
+          unzip -q "${{ steps.backup-metadata.outputs.zip_file }}" -d /tmp/content-scan || true
+
+          npm install -g wrangler
+
+          URLS=$(grep -r -h 'https://\(www\.\)\?reddit\.com[^ )>\"]*' /tmp/content-scan \
+            --include="*.md" -o 2>/dev/null | sort -u || true)
+          COUNT=$(echo "$URLS" | grep -c . 2>/dev/null || echo 0)
+          echo "Found $COUNT Reddit URL(s) in content"
+
+          CACHED=0
+          for URL in $URLS; do
+            if echo "$URL" | grep -q '/s/'; then
+              RESOLVED=$(curl -sI "$URL" -A "Mozilla/5.0" -L --max-redirs 3 2>/dev/null \
+                | grep -i "^location:" | tail -1 | sed 's/location: //i' | tr -d '\r' || echo "")
+              [ -n "$RESOLVED" ] && URL="$RESOLVED"
+            fi
+            BASE_URL=$(echo "$URL" | cut -d'?' -f1 | sed 's|/$||')
+            echo "$BASE_URL" | grep -q '/comments/' || continue
+
+            OLD_URL=$(echo "$BASE_URL" | sed 's|www\.reddit\.com|old.reddit.com|')
+            HTML=$(curl -s "$OLD_URL" -A "Mozilla/5.0" -H "Accept: text/html" 2>/dev/null || echo "")
+            TITLE=$(echo "$HTML" | grep -o 'property="og:title" content="[^"]*"' \
+              | head -1 | sed 's/.*content="//;s/"//')
+            IMAGE=$(echo "$HTML" | grep -o 'property="og:image" content="[^"]*"' \
+              | head -1 | sed 's/.*content="//;s/"//' | sed 's/&amp;/\&/g')
+            SUBREDDIT=$(echo "$BASE_URL" | grep -o 'r/[^/]*' | head -1 || echo "reddit.com")
+            [ -z "$TITLE" ] && continue
+
+            PAYLOAD=$(python3 -c "
+import json, sys
+print(json.dumps({'title':sys.argv[1],'image':sys.argv[2] if sys.argv[2] else None,'domain':sys.argv[3],'description':None}))
+" "$TITLE" "$IMAGE" "$SUBREDDIT")
+
+            npx wrangler kv key put "preview:$BASE_URL" "$PAYLOAD" \
+              --namespace-id="$KV_NAMESPACE_ID" --remote 2>/dev/null && CACHED=$((CACHED+1)) || true
+          done
+          echo "✅ Cached $CACHED Reddit preview(s) in KV"
+
       - name: Create workflow summary
         if: always()
         run: |

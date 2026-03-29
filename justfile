@@ -35,6 +35,16 @@ backup-download:
 backup-extract ZIP_FILE:
     python3 .github/deploy/microblog_backup.py --extract-only {{ZIP_FILE}}
 
+# Download the latest content export ZIP from the most recent GitHub release
+release-download:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    mkdir -p backups
+    echo "Fetching latest release from doughatcher/dotcom..."
+    gh release download --repo doughatcher/dotcom --pattern "*.zip" --dir backups --clobber
+    echo "Downloaded to backups/:"
+    ls -lh backups/*.zip | tail -5
+
 # Validate session cookie
 validate:
     python3 .github/deploy/microblog_deploy.py --validate-only
@@ -62,7 +72,7 @@ git-config:
 
 # Install Python dependencies
 install: git-config
-    pip3 install --user requests python-dotenv
+    pip3 install --user --break-system-packages requests python-dotenv
     @echo "Installation complete."
 
 # Show available commands

@@ -54,63 +54,11 @@
     return null;
   }
 
-  // Use Reddit's public JSON API to build a proper post card.
-  // Returns a DOM element on success, null on failure (caller falls back to generic preview card).
-  async function createRedditEmbed(link) {
-    const url = link.href;
-    try {
-      // Reddit serves JSON for any post by appending .json
-      const jsonUrl = url.replace(/\/?(\?.*)?$/, '.json$1');
-      const res = await fetch(jsonUrl, { headers: { 'Accept': 'application/json' } });
-      if (!res.ok) throw new Error('Reddit JSON ' + res.status);
-      const data = await res.json();
-
-      const post = data[0]?.data?.children?.[0]?.data;
-      if (!post) throw new Error('no post data');
-
-      const title = post.title || getRedditTitleFromUrl(url) || 'Reddit post';
-      const subreddit = post.subreddit ? `r/${post.subreddit}` : 'reddit.com';
-      const isVideo = post.is_video;
-
-      // Prefer the highest-res preview image; fall back to thumbnail
-      const badThumbnails = new Set(['self', 'default', 'nsfw', 'spoiler', 'image', '']);
-      const previewImg = post.preview?.images?.[0]?.resolutions?.slice(-1)[0]?.url?.replace(/&amp;/g, '&')
-        || post.preview?.images?.[0]?.source?.url?.replace(/&amp;/g, '&')
-        || null;
-      const thumbImg = post.thumbnail && !badThumbnails.has(post.thumbnail) ? post.thumbnail : null;
-      const image = previewImg || thumbImg;
-
-      const card = document.createElement('a');
-      card.href = url;
-      card.className = 'link-preview-card reddit-preview';
-      card.target = '_blank';
-      card.rel = 'noopener';
-
-      let html = '';
-      if (image) {
-        html += `
-          <div class="link-preview-image">
-            ${isVideo ? '<div class="reddit-play-badge">▶</div>' : ''}
-            <img src="${image}" alt="${title}" loading="lazy" onerror="this.parentElement.style.display='none'">
-          </div>`;
-      }
-      html += `
-        <div class="link-preview-content">
-          <div class="link-preview-title">${title}</div>
-          <div class="link-preview-url">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-              <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-            </svg>
-            ${subreddit}
-          </div>
-        </div>`;
-      card.innerHTML = html;
-      return card;
-    } catch (e) {
-      console.warn('Reddit JSON API failed, using preview card fallback:', e);
-      return null;
-    }
+  // Reddit direct API calls are blocked by CORS from the browser.
+  // All Reddit metadata is fetched via the link-preview Worker (server-side).
+  // This function always returns null so the caller falls through to fetchMetadata.
+  async function createRedditEmbed(_link) {
+    return null;
   }
 
   // Function to create YouTube embed
@@ -168,36 +116,46 @@
     return card;
   }
 
-  // Fetch link metadata using LinkPreview API
+  // Fetch link metadata via the doughatcher link-preview Worker.
+  // Falls back to microlink.io if the Worker is unavailable.
   async function fetchMetadata(url) {
+    // Try the Worker first (handles Reddit, no CORS issues)
     try {
-      // Using microlink.io API - reliable and has good free tier
+      const apiUrl = `https://doughatcher-link-preview.doug-hatcher.workers.dev/preview?url=${encodeURIComponent(url)}`;
+      const response = await fetch(apiUrl);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.title && !data.error) {
+          return {
+            title: data.title,
+            description: data.description || '',
+            image: data.image || null,
+          };
+        }
+      }
+    } catch (e) {
+      console.warn('Link preview Worker unavailable, falling back to microlink:', e);
+    }
+
+    // Fallback: microlink.io
+    try {
       const apiUrl = `https://api.microlink.io/?url=${encodeURIComponent(url)}`;
       const response = await fetch(apiUrl);
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch metadata');
-      }
-      
-      const data = await response.json();
-      
-      if (data.status === 'success' && data.data) {
-        return {
-          title: data.data.title || getDomain(url),
-          description: data.data.description || '',
-          image: data.data.image?.url || data.data.logo?.url || null
-        };
+      if (response.ok) {
+        const data = await response.json();
+        if (data.status === 'success' && data.data) {
+          return {
+            title: data.data.title || getDomain(url),
+            description: data.data.description || '',
+            image: data.data.image?.url || data.data.logo?.url || null,
+          };
+        }
       }
     } catch (error) {
       console.error('Metadata fetch failed:', error);
     }
-    
-    // Fallback metadata
-    return {
-      title: getDomain(url),
-      description: url,
-      image: null
-    };
+
+    return { title: getDomain(url), description: '', image: null };
   }
 
   // Find all standalone links in post bodies and convert to preview cards
@@ -286,18 +244,6 @@
 
             // Fetch metadata for other links
             const metadata = await fetchMetadata(url);
-
-            // Reddit fallback: fix a hash-like title with the URL slug, and
-            // never show the Reddit brand/logo image (redditstatic.com) as the post image.
-            if (isRedditUrl(url)) {
-              const looksLikeHash = !metadata.title || /^[A-Za-z0-9_-]{6,20}$/.test(metadata.title.trim());
-              if (looksLikeHash) {
-                metadata.title = getRedditTitleFromUrl(url) || 'Reddit post';
-              }
-              if (metadata.image && metadata.image.includes('redditstatic.com')) {
-                metadata.image = null;
-              }
-            }
 
             const card = createPreviewCard(link, metadata);
             

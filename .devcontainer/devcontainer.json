@@ -2,16 +2,21 @@
 	"name": "doughatcher.com",
 	"image": "mcr.microsoft.com/devcontainers/base:noble",
 	"features": {
-		"ghcr.io/devcontainers/features/hugo:1": {},
+		"ghcr.io/devcontainers/features/hugo:1": {"version": "0.123.8"},
 		"ghcr.io/devcontainers/features/node:1": {},
 		"ghcr.io/devcontainers/features/python:1": {
 			"installTools": true,
 			"installJupyterlab": false
 		},
-		"ghcr.io/schlich/devcontainer-features/just:0": {}
+		"ghcr.io/guiyomh/features/just:0": {},
+		"ghcr.io/devcontainers/features/github-cli:1": {}
 	},
 	"postCreateCommand": "just install",
-	"postAttachCommand": "hugo serve --disableFastRender --noHTTPCache",
+	"postStartCommand": "fuser -k 1313/tcp 2>/dev/null || true; hugo server --disableFastRender --noHTTPCache --bind 0.0.0.0 > /tmp/hugo.log 2>&1 &",
+	"remoteEnv": {
+		"GH_TOKEN": "${localEnv:GITHUB_TOKEN}"
+	},
+	"runArgs": ["-p", "1313:1313"],
 	"forwardPorts": [
 		1313
 	],

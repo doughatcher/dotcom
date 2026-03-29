@@ -1,0 +1,104 @@
+name: Deploy Link Preview Worker
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'apps/link-preview-service/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/link-preview-service
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+          cache-dependency-path: apps/link-preview-service/package-lock.json
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Deploy Worker
+        env:
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+        run: npx wrangler deploy
+
+  reddit-cache:
+    runs-on: ubuntu-latest
+    needs: deploy
+    if: ${{ always() && needs.deploy.result != 'failure' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Pre-populate KV cache with Reddit metadata
+        env:
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          KV_NAMESPACE_ID: f48049994ef74c418fe7b8f491f6e905
+        run: |
+          npm install -g wrangler
+          cd apps/link-preview-service
+
+          echo "Scanning content for Reddit URLs..."
+          URLS=$(grep -r -h 'https://\(www\.\)\?reddit\.com[^ )>]*' ../../content \
+            --include="*.md" -o 2>/dev/null | sort -u || true)
+          COUNT=$(echo "$URLS" | grep -c . || echo 0)
+          echo "Found $COUNT Reddit URL(s)"
+
+          for URL in $URLS; do
+            # Resolve /s/ share links via HTTP redirect
+            if echo "$URL" | grep -q '/s/'; then
+              RESOLVED=$(curl -sI "$URL" -A "Mozilla/5.0" -L --max-redirs 3 2>/dev/null \
+                | grep -i "^location:" | tail -1 | sed 's/location: //i' | tr -d '\r' || echo "")
+              [ -n "$RESOLVED" ] && URL="$RESOLVED"
+            fi
+
+            BASE_URL=$(echo "$URL" | cut -d'?' -f1 | sed 's|/$||')
+            echo "$BASE_URL" | grep -q '/comments/' || continue
+
+            echo -n "  $BASE_URL ... "
+            OLD_URL=$(echo "$BASE_URL" | sed 's|www\.reddit\.com|old.reddit.com|')
+            HTML=$(curl -s "$OLD_URL" -A "Mozilla/5.0" -H "Accept: text/html" 2>/dev/null || echo "")
+
+            TITLE=$(echo "$HTML" | grep -o 'property="og:title" content="[^"]*"' \
+              | head -1 | sed 's/.*content="//;s/"//')
+            IMAGE=$(echo "$HTML" | grep -o 'property="og:image" content="[^"]*"' \
+              | head -1 | sed 's/.*content="//;s/"//' | sed 's/&amp;/\&/g')
+            SUBREDDIT=$(echo "$BASE_URL" | grep -o 'r/[^/]*' | head -1 || echo "reddit.com")
+
+            if [ -z "$TITLE" ]; then
+              echo "skip (no title)"
+              continue
+            fi
+
+            PAYLOAD=$(python3 -c "
+import json, sys
+print(json.dumps({
+  'title': sys.argv[1],
+  'image': sys.argv[2] if sys.argv[2] else None,
+  'domain': sys.argv[3],
+  'description': None
+}))
+" "$TITLE" "$IMAGE" "$SUBREDDIT")
+
+            CACHE_KEY="preview:$BASE_URL"
+            npx wrangler kv key put "$CACHE_KEY" "$PAYLOAD" \
+              --namespace-id="$KV_NAMESPACE_ID" --remote 2>/dev/null && echo "cached" || echo "failed"
+          done
+          echo "Reddit cache pre-population complete."
