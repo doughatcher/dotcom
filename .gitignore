@@ -11,7 +11,8 @@ public/
 .session-cookie
 
 # Content and data (managed by Micro.blog, not git)
-content/
+content/*
+!content/blog/
 data/
 
 # Python
