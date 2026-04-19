@@ -10,6 +10,7 @@
 
 import { execSync } from 'child_process';
 import fs from 'fs';
+import os from 'os';
 import path from 'path';
 
 const BLOG_PATH = process.env.BLOG_PATH || './content/blog';
@@ -32,12 +33,14 @@ export async function createDraftPR(idea) {
     run(`git commit -m "blog(draft): ${idea.title}"`);
     run(`git push origin ${branch}`);
 
-    // Open Draft PR
+    // Open Draft PR — write body to temp file to avoid shell quoting issues
     const body = buildPRBody(idea, filePath);
+    const bodyFile = path.join(os.tmpdir(), `pr-body-${idea.slug}.md`);
+    fs.writeFileSync(bodyFile, body, 'utf8');
     const prUrl = run(
       `gh pr create --draft \
         --title ${JSON.stringify(idea.title)} \
-        --body ${JSON.stringify(body)} \
+        --body-file ${JSON.stringify(bodyFile)} \
         --base main`,
     ).trim();
 
