@@ -1030,15 +1030,15 @@ a:hover {
   background-color: hsl(var(--card));
   border: 1px solid hsl(var(--border) / 0.3);
   border-radius: 0.75rem;
-  padding: 3rem;
+  padding: 2rem;
   margin-bottom: 2rem;
 }
 
 .single-post-title {
-  font-size: 2.25rem;
+  font-size: 1.375rem;
   font-weight: 700;
-  line-height: 1.2;
-  margin-bottom: 1rem;
+  line-height: 1.3;
+  margin-bottom: 0.75rem;
   color: hsl(var(--foreground));
 }
 
@@ -2399,4 +2399,177 @@ sup a {
 .micro-post .youtube-embed-container {
   margin: 1rem 0;
   border-radius: 0.5rem;
+}
+
+/* ── Blog Section ─────────────────────────────────────────── */
+
+.blog-header {
+  margin-bottom: 2.5rem;
+}
+
+.blog-header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.blog-description {
+  color: hsl(var(--muted-foreground));
+  font-size: 1rem;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Pillar badge */
+.blog-pillar {
+  display: inline-block;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.08);
+  border: 1px solid hsl(var(--primary) / 0.2);
+  border-radius: 999px;
+  padding: 0.2em 0.75em;
+  margin-bottom: 0.75rem;
+}
+
+/* Blog list cards */
+.blog-post-preview {
+  padding: 1.75rem 2rem;
+}
+
+.blog-post-preview .post-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+}
+
+.blog-post-preview .post-title a {
+  color: hsl(var(--foreground));
+  text-decoration: none;
+}
+
+.blog-post-preview .post-title a:hover {
+  color: hsl(var(--primary));
+}
+
+.blog-summary {
+  color: hsl(var(--muted-foreground));
+  font-size: 0.9375rem;
+  line-height: 1.65;
+  margin-bottom: 1.25rem;
+}
+
+.blog-post-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.blog-post-footer .post-meta {
+  margin: 0;
+}
+
+.blog-post-footer .read-more {
+  font-size: 0.875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* Blog single post */
+.blog-post-single .single-post-title {
+  margin-top: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.blog-post-single .post-meta {
+  display: block;
+  font-size: 0.8125rem;
+}
+
+.blog-post-single .post-footer {
+  margin-top: 2rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid hsl(var(--border) / 0.3);
+}
+
+.blog-post-single .post-content {
+  font-size: 1.0625rem;
+  line-height: 1.8;
+}
+
+.blog-post-single .post-content p {
+  margin-bottom: 1.5rem;
+}
+
+.blog-post-single .post-content h2 {
+  font-size: 1.375rem;
+  font-weight: 650;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.blog-post-single .post-content strong {
+  color: hsl(var(--foreground));
+}
+
+/* Post nav at bottom of single */
+.blog-post-nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  flex-wrap: wrap;
+}
+
+.blog-nav-link {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-width: 0;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  text-decoration: none;
+  transition: border-color 0.2s;
+}
+
+.blog-nav-link:hover {
+  border-color: hsl(var(--primary) / 0.4);
+}
+
+.blog-nav-label {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 0.25rem;
+}
+
+.blog-nav-title {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.blog-nav-next {
+  text-align: right;
+}
+
+.blog-back-link {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  text-decoration: none;
+  padding: 0.5rem 0;
+  white-space: nowrap;
+}
+
+.blog-back-link:hover {
+  color: hsl(var(--foreground));
 }

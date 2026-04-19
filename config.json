@@ -1,7 +1,13 @@
 {
   "title": "Doug Hatcher",
   "baseURL": "https://doughatcher.com/",
-  "menu": {},
+  "menu": {
+    "main": [
+      { "name": "Blog", "url": "/blog/", "weight": 10 },
+      { "name": "Archive", "url": "/archive/", "weight": 20 },
+      { "name": "Consulting", "url": "/consulting/", "weight": 30 }
+    ]
+  },
   "mediaTypes": {
     "application/json": {
       "suffixes": [
