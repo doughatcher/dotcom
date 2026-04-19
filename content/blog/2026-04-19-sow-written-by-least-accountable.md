@@ -1,7 +1,7 @@
 ---
 title: "The SOW Is Written By the Person Least Accountable For Delivering It"
 date: 2026-04-19
-draft: true
+draft: false
 pillar: "The Optimism Cascade"
 tags: [sow, presales, mid-market, commerce, implementation]
 ---
