@@ -21,7 +21,11 @@ export async function createDraftPR(idea) {
   const filePath = path.join(BLOG_PATH, `${today}-${idea.slug}.md`);
 
   try {
-    // Create branch off main
+    // Delete stale remote branch if it exists (from a previous failed run)
+    try { run(`git push origin --delete ${branch}`); } catch (_) {}
+
+    // Create branch off main (delete local if it exists from a previous run)
+    try { run(`git branch -D ${branch}`); } catch (_) {}
     run(`git checkout -b ${branch}`);
 
     // Write the draft
