@@ -143,7 +143,6 @@ Generate exactly 3 blog post ideas with full drafts.
 ---
 title: "<post title>"
 date: ${today}
-draft: true
 pillar: "<pillar name or Wild Card>"
 tags: []
 ---

@@ -1,8 +1,8 @@
 /**
  * pr-creator.js
  *
- * Creates a branch in doughatcher/dotcom, commits the draft post, and opens a Draft PR.
- * Returns the PR URL.
+ * Creates a branch in doughatcher/dotcom, commits the post, and opens a PR
+ * ready for review. Returns the PR URL.
  *
  * Requires GH_TOKEN env var and gh CLI available in PATH.
  * Git identity must be configured in DOTCOM_PATH before calling (done in workflow).
@@ -46,7 +46,7 @@ export async function createDraftPR(idea) {
     const bodyFile = path.join(os.tmpdir(), `pr-body-${idea.slug}.md`);
     fs.writeFileSync(bodyFile, body, 'utf8');
     const prUrl = run(
-      `gh pr create --draft \
+      `gh pr create \
         --repo doughatcher/dotcom \
         --head ${branch} \
         --title ${JSON.stringify(idea.title)} \
@@ -62,7 +62,7 @@ export async function createDraftPR(idea) {
 }
 
 function buildPRBody(idea, filePath) {
-  return `## 📝 Blog Draft — ${idea.pillar}
+  return `## 📝 Blog Post — ${idea.pillar}
 
 **Hook:** ${idea.hook}
 
@@ -72,9 +72,9 @@ function buildPRBody(idea, filePath) {
 
 ---
 
-Draft is in \`${filePath}\`. Edit directly on this branch or merge as-is.
+Post is in \`${filePath}\`. Edit directly on this branch or merge as-is.
 
-**To publish:** merge this PR. The \`blog-publish\` workflow will auto-generate a LinkedIn post and cross-post it.
+**To publish:** squash-merge this PR. The \`blog-publish\` workflow will auto-generate a LinkedIn post and cross-post it.
 
 **To discard:** close without merging.`;
 }
