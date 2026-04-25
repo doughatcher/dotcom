@@ -136,7 +136,7 @@
     "show_thumbnails": false,
     "show_publications": true,
     "show_publications_sidebar": true,
-    "publications_sidebar_limit": 3,
+    "publications_sidebar_limit": 2,
     "publications_title": "Enterprise Architect and Consultant",
     "posts_per_page": 5,
     "sidebar_width": "400px",
