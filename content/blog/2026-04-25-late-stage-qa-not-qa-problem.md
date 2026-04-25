@@ -1,7 +1,7 @@
 ---
 title: "Late-Stage QA Is Not a QA Problem"
 date: 2026-04-25
-draft: true
+draft: false
 pillar: "The Post-Launch Reality"
 tags: []
 linkedin_copy: |
