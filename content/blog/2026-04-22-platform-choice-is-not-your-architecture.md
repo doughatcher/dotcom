@@ -1,7 +1,7 @@
 ---
 title: "Your Platform Choice Is Not Your Architecture"
 date: 2026-04-22
-draft: true
+draft: false
 pillar: "The Constellation"
 tags: [commerce, architecture, integration, replatform, mid-market]
 linkedin_copy: |
