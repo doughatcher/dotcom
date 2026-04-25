@@ -1,0 +1,66 @@
+name: Blog Idea Engine
+
+on:
+  schedule:
+    # Monday 8am EST (1pm UTC)
+    - cron: '0 13 * * 1'
+  workflow_dispatch:
+    inputs:
+      inject_context:
+        description: "Optional: inject a thought or angle for this week's ideas"
+        required: false
+        type: string
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout doughatcher
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.DOTCOM_PAT }}
+          fetch-depth: 0
+
+      - name: Checkout vault backup
+        uses: actions/checkout@v4
+        with:
+          repository: superterran/obsidian-vault-backup
+          token: ${{ secrets.VAULT_READ_TOKEN }}
+          path: vault
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/editorial-loop/package-lock.json
+
+      - name: Install dependencies
+        working-directory: apps/editorial-loop
+        run: npm ci
+
+      - name: Configure git identity
+        run: |
+          git config user.name "editorial-loop[bot]"
+          git config user.email "actions@github.com"
+
+      - name: Run editorial loop
+        working-directory: apps/editorial-loop
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          VAULT_PATH: ${{ github.workspace }}/vault
+          BLOG_PATH: ${{ github.workspace }}/content/blog
+          DOTCOM_PATH: ${{ github.workspace }}
+          INJECT_CONTEXT: ${{ inputs.inject_context }}
+          GH_TOKEN: ${{ secrets.DOTCOM_PAT }}
+        run: node index.js
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "## Blog Idea Engine" >> $GITHUB_STEP_SUMMARY
+          echo "Run at: $(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Check open Draft PRs → [doughatcher/dotcom pulls](https://github.com/doughatcher/dotcom/pulls)" >> $GITHUB_STEP_SUMMARY

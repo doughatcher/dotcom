@@ -1,0 +1,179 @@
+/**
+ * idea-generator.js
+ *
+ * Calls Claude to generate 3 blog post ideas + full drafts.
+ * Uses tool_use to get structured output.
+ *
+ * Ideas breakdown:
+ *   - 2 mapped to editorial pillars from the strategy doc
+ *   - 1 wild card — creative, unexpected, still in Doug's voice
+ *
+ * INJECT_CONTEXT env var allows injecting a weekly thought or
+ * prompt nudge (from workflow_dispatch or Slack reply in Phase 2).
+ */
+
+import Anthropic from '@anthropic-ai/sdk';
+
+const client = new Anthropic();
+
+const IDEA_TOOL = {
+  name: 'submit_ideas',
+  description: 'Submit the three generated blog post ideas with full drafts',
+  input_schema: {
+    type: 'object',
+    required: ['ideas'],
+    properties: {
+      ideas: {
+        type: 'array',
+        minItems: 3,
+        maxItems: 3,
+        items: {
+          type: 'object',
+          required: ['title', 'pillar', 'hook', 'angle', 'source_material', 'slug', 'draft_content', 'linkedin_copy'],
+          properties: {
+            title: { type: 'string', description: 'Post title — specific, compelling, not a listicle' },
+            pillar: { type: 'string', description: 'Editorial pillar name, or "Wild Card"' },
+            hook: { type: 'string', description: 'One sentence — why this post is interesting' },
+            angle: { type: 'string', description: '2-3 sentences — the actual argument the post makes' },
+            source_material: { type: 'string', description: 'Vault files or patterns that informed this idea' },
+            slug: { type: 'string', description: 'URL-friendly slug, e.g. "optimism-cascade-replatform"' },
+            draft_content: { type: 'string', description: 'Full markdown draft including frontmatter, 800-1200 words' },
+            linkedin_copy: { type: 'string', description: '250-400 word LinkedIn post. Opens with a specific claim or observation — not "excited to share." Written for two audiences at once: executive leaders (organizational judgment, strategic outcomes, what broke and why) and technical leaders (specific tradeoffs, architectural reasoning, the thing practitioners actually wrestle with). No motivational language. No buzzwords. Ends with exactly: "Full post: {{url}}" — nothing else.' },
+          },
+        },
+      },
+    },
+  },
+};
+
+export async function generateIdeas({ strategyDoc, baseline, current, delta, recentContent, existingPosts }) {
+  const today = new Date().toISOString().split('T')[0];
+  const injectContext = process.env.INJECT_CONTEXT || '';
+
+  const recentContentText = recentContent
+    .map(f => `### ${f.path}\n${f.excerpt}`)
+    .join('\n\n---\n\n');
+
+  const existingPostsNote = existingPosts.length > 0
+    ? `Existing posts (avoid repeating these angles):\n${existingPosts.map(p => `- ${p}`).join('\n')}`
+    : 'No existing posts yet — the blog is fresh.';
+
+  const injectNote = injectContext
+    ? `\n## Weekly Context Injection\nThis week Doug wants to explore or incorporate:\n> ${injectContext}\nWeight this heavily when selecting the angle for at least one idea.\n`
+    : '';
+
+  const baselineBlock = baseline
+    ? `## Baseline Landscape (operator-curated, slow-changing)\nThe broad shape of the work Doug operates inside. Pillar-organized. Treat as the dense context layer.\n\n${baseline}`
+    : '';
+
+  const currentBlock = current
+    ? `## Current Rolling View (pipeline, refreshed daily)\nA distilled four-pillar snapshot of what's moving right now. Use it to confirm which themes are live this week.\n\n${current}`
+    : '';
+
+  const deltaBlock = delta
+    ? `## This Week's Delta (most recent run: ${delta.filename})\nWhat shifted in the last cycle. Highest signal for "what should this week's post be about."\n\n${delta.content}`
+    : '';
+
+  const prompt = `You are generating weekly blog post ideas for Doug Hatcher at doughatcher.com.
+Doug is a senior technical architect specializing in mid-market commerce (SFCC, Shopify Plus).
+His voice: plain, confident, specific, practitioner-to-practitioner. No hustle-bro content.
+
+The inputs below are layered: STRATEGY is Doug's voice and pillars. BASELINE LANDSCAPE is the broad shape of the operating world he works in. CURRENT ROLLING VIEW is what's live this week. THIS WEEK'S DELTA is what just shifted. RECENT PERSONAL NOTES is what Doug himself has been writing. Ground the ideas in the lived material — pillars are the lens, the index is the evidence, personal notes are the voice.
+
+---
+
+## Strategy Document
+${strategyDoc}
+
+---
+
+${baselineBlock}
+
+---
+
+${currentBlock}
+
+---
+
+${deltaBlock}
+
+---
+
+## Recent Personal Notes (last 60 days)
+What Doug himself has been writing. Mine for seed phrases, tensions he keeps returning to.
+
+${recentContentText}
+
+---
+
+## ${existingPostsNote}
+${injectNote}
+---
+
+## Task
+
+Generate exactly 3 blog post ideas with full drafts.
+
+**Critical constraint:** The strategy document above lists "Seed posts" under each pillar. Those are planned ideas Doug already has queued — do NOT generate them. They exist. Your job is to find NEW angles from the vault content above that aren't already covered there. If you find yourself writing a title that resembles a seed post, stop and dig deeper into the vault material for something fresher.
+
+**What "mining the vault" means:** Look for patterns across the recent files. A tension Doug keeps returning to. A specific failure mode that came up in multiple contexts. A thing that surprised him in a client or work situation. Something he understands that most practitioners get wrong. The idea should feel like it came from lived experience in the vault, not from a strategy document framework.
+
+**Idea breakdown:**
+- 2 ideas mapped to editorial pillars (The Optimism Cascade / The Constellation / The Merchant-Side Gap / The Post-Launch Reality)
+- 1 wild card — creative, outside the pillars, but still grounded in Doug's expertise and voice. Surprise him.
+
+**For each idea, strictly follow the Rules of Engagement:**
+- Abstract a level above any real situation — no project or client is identifiable
+- No named competitors, agencies, or platforms punched down at
+- No listicle titles ("5 reasons...", "10 lessons...")
+- Favor concrete technical specificity over vague commentary
+- Keep the draft 800–1200 words
+
+**Voice and style (non-negotiable):**
+- **NEVER use em-dashes (—).** Not once. Restructure the sentence or use a period.
+- No hedging language ("sort of," "kind of," "perhaps," "arguably"). Commit to the claim.
+- No filler openings ("In today's world," "It's important to note").
+- Active voice throughout. Subject acts.
+- Short sentences. One idea per sentence as the default.
+- No buzzwords: "seamless," "scalable," "robust," "holistic," "leverage" (as a verb), "journey," "ecosystem."
+- The draft should sound like a confident senior practitioner talking directly to a peer, not a blog post written to impress.
+
+**Each draft must use this frontmatter:**
+\`\`\`yaml
+---
+title: "<post title>"
+date: ${today}
+draft: true
+pillar: "<pillar name or Wild Card>"
+tags: []
+---
+\`\`\`
+
+Body format: short punchy paragraphs, no headers needed for shorter posts, use plain markdown.
+
+**For linkedin_copy:**
+Write as a senior technical practitioner who leads engineering orgs and ships real product. The post should speak to two audiences simultaneously:
+- Executive and business leaders: organizational awareness, strategic judgment, what the decision costs and why it matters, the failure mode nobody talks about
+- Technical leaders and architects: specific tradeoffs, concrete failure modes, the implementation detail that changes everything
+
+Open with a single specific observation or claim — the kind of sentence that makes a VP of Engineering stop scrolling because they've lived it. Not a question. Not an announcement. A statement of something true and underappreciated.
+
+Middle: show the thinking. What the obvious answer gets wrong. What the counterintuitive principle is. Be specific enough that a technical reader recognizes real experience.
+
+End with exactly: "Full post: {{url}}" — no call-to-action fluff, no "let me know your thoughts."
+
+No em-dashes. No hedging. No "I'm thrilled to share." Sound like someone who has already solved this problem twice.`;
+
+  const response = await client.messages.create({
+    model: 'claude-opus-4-6',
+    max_tokens: 14000,
+    tools: [IDEA_TOOL],
+    tool_choice: { type: 'tool', name: 'submit_ideas' },
+    messages: [{ role: 'user', content: prompt }],
+  });
+
+  const toolUse = response.content.find(b => b.type === 'tool_use');
+  if (!toolUse) throw new Error('Claude did not return structured ideas');
+
+  return toolUse.input.ideas;
+}
