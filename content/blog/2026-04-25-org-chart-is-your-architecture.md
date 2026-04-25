@@ -1,7 +1,7 @@
 ---
 title: "Your Org Chart Is Your Architecture"
 date: 2026-04-25
-draft: true
+draft: false
 pillar: "Wild Card"
 tags: []
 linkedin_copy: |
