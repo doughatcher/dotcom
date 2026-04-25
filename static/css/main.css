@@ -2517,6 +2517,33 @@ sup a {
   color: hsl(var(--foreground));
 }
 
+/* Consulting CTA — sits between post body and prev/next nav */
+.blog-consulting-cta {
+  margin-top: 2rem;
+  padding: 1.25rem 1.5rem;
+  background: hsl(var(--card));
+  border: 1px solid hsl(var(--border) / 0.3);
+  border-left: 3px solid hsl(var(--primary) / 0.6);
+  border-radius: 0.75rem;
+}
+
+.blog-consulting-line {
+  margin: 0;
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  color: hsl(var(--muted-foreground));
+}
+
+.blog-consulting-line a {
+  color: hsl(var(--foreground));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.blog-consulting-line a:hover {
+  color: hsl(var(--primary));
+}
+
 /* Post nav at bottom of single */
 .blog-post-nav {
   display: flex;
