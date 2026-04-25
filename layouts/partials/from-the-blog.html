@@ -1,0 +1,29 @@
+{{ $blogSection := .Site.GetPage "section" "blog" }}
+{{ if $blogSection }}
+{{ $latest := index (where $blogSection.Pages "Draft" "!=" true) 0 }}
+{{ if $latest }}
+<div class="from-the-blog-sidebar">
+    <h3 class="sidebar-section-title">From the Blog</h3>
+
+    <article class="from-the-blog-item">
+        {{ if $latest.Params.pillar }}
+        <span class="from-the-blog-pillar">{{ $latest.Params.pillar }}</span>
+        {{ end }}
+
+        <h4 class="from-the-blog-title">
+            <a href="{{ $latest.RelPermalink }}">{{ $latest.Title }}</a>
+        </h4>
+
+        <div class="from-the-blog-meta">
+            <time datetime="{{ $latest.Date.Format "2006-01-02" }}">{{ $latest.Date.Format "Jan 2, 2006" }}</time>
+            <span class="from-the-blog-dot">·</span>
+            <span>{{ $latest.ReadingTime }} min read</span>
+        </div>
+    </article>
+
+    <div class="from-the-blog-footer">
+        <a href="{{ "/blog/" | relURL }}" class="from-the-blog-see-all">View all posts →</a>
+    </div>
+</div>
+{{ end }}
+{{ end }}
