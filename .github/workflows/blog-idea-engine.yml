@@ -14,12 +14,14 @@ on:
 jobs:
   generate:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout doughatcher
         uses: actions/checkout@v4
         with:
-          token: ${{ secrets.DOTCOM_PAT }}
           fetch-depth: 0
 
       - name: Checkout vault backup
@@ -54,7 +56,7 @@ jobs:
           BLOG_PATH: ${{ github.workspace }}/content/blog
           DOTCOM_PATH: ${{ github.workspace }}
           INJECT_CONTEXT: ${{ inputs.inject_context }}
-          GH_TOKEN: ${{ secrets.DOTCOM_PAT }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: node index.js
 
       - name: Summary
