@@ -1,7 +1,7 @@
 ---
 title: "DevOps Matters More When AI Writes the Code"
 date: 2026-04-25
-draft: true
+draft: false
 pillar: "Wild Card"
 tags: []
 linkedin_copy: |
