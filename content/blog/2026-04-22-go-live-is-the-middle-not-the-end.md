@@ -1,7 +1,7 @@
 ---
 title: "Go-Live Is the Middle of the Project, Not the End"
 date: 2026-04-22
-draft: true
+draft: false
 pillar: "The Merchant-Side Gap"
 tags: [commerce, replatform, go-live, post-launch, mid-market]
 linkedin_copy: |
