@@ -1,7 +1,7 @@
 ---
 title: "The Integration Your Team Monitors Least Is the One That Will Hurt You Most"
 date: 2026-04-22
-draft: true
+draft: false
 pillar: "Wild Card"
 tags: [commerce, observability, integration, monitoring, operations]
 linkedin_copy: |
