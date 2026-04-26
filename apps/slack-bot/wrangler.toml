@@ -12,6 +12,14 @@ head_sampling_rate = 1
 #   SLACK_SIGNING_SECRET  - signing secret from Slack app settings
 #   ANTHROPIC_API_KEY     - Claude API key
 #   GITHUB_TOKEN          - PAT with write access to dotcom + vault repos
+#   TAVILY_API_KEY        - (optional) Tavily search API key for agentic post research
+
+# KV namespace for thread → post context (back-and-forth editing state)
+# Create with: wrangler kv namespace create THREAD_CONTEXT
+# Then paste the resulting ID below.
+[[kv_namespaces]]
+binding = "THREAD_CONTEXT"
+id = "8a2d2cec87fb4a518667b0d954d2524f"
 
 [vars]
 ENVIRONMENT = "production"

@@ -1,6 +1,6 @@
 /**
- * GitHub Contents API helpers.
- * Uses the REST API to read and write files, enabling commits from Workers.
+ * GitHub REST API helpers.
+ * Covers file reads/writes, branch management, and PR operations.
  */
 const GH_API = 'https://api.github.com';
 
@@ -60,4 +60,107 @@ export async function writeFile(repo, path, content, message, sha, token) {
  */
 export async function listDir(repo, path, token) {
   return ghFetch(`/repos/${repo}/contents/${encodeURIComponent(path)}`, {}, token);
+}
+
+/**
+ * Read a file from a specific branch/ref.
+ * Returns { content (decoded string), sha }
+ */
+export async function readFileOnBranch(repo, filePath, ref, token) {
+  const data = await ghFetch(
+    `/repos/${repo}/contents/${encodeURIComponent(filePath)}?ref=${encodeURIComponent(ref)}`,
+    {},
+    token
+  );
+  const content = atob(data.content.replace(/\n/g, ''));
+  return { content, sha: data.sha };
+}
+
+/**
+ * Get the SHA of a branch ref.
+ */
+export async function getRef(repo, branch, token) {
+  const data = await ghFetch(`/repos/${repo}/git/ref/heads/${branch}`, {}, token);
+  return data.object.sha;
+}
+
+/**
+ * Create a new branch off a given SHA.
+ */
+export async function createBranch(repo, branchName, sha, token) {
+  await ghFetch(`/repos/${repo}/git/refs`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ref: `refs/heads/${branchName}`, sha }),
+  }, token);
+}
+
+/**
+ * Create a new file on a specific branch (no sha needed — file must not exist).
+ * Returns the commit URL.
+ */
+export async function createFileOnBranch(repo, filePath, content, message, branch, token) {
+  const encoded = btoa(unescape(encodeURIComponent(content)));
+  const data = await ghFetch(
+    `/repos/${repo}/contents/${encodeURIComponent(filePath)}`,
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, content: encoded, branch }),
+    },
+    token
+  );
+  return data.commit.html_url;
+}
+
+/**
+ * Update an existing file on a specific branch.
+ * Returns the commit URL.
+ */
+export async function updateFileOnBranch(repo, filePath, content, message, sha, branch, token) {
+  const encoded = btoa(unescape(encodeURIComponent(content)));
+  const data = await ghFetch(
+    `/repos/${repo}/contents/${encodeURIComponent(filePath)}`,
+    {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, content: encoded, sha, branch }),
+    },
+    token
+  );
+  return data.commit.html_url;
+}
+
+/**
+ * Create a Pull Request.
+ * Returns { number, url }
+ */
+export async function createPR(repo, head, base, title, body, draft, token) {
+  const data = await ghFetch(`/repos/${repo}/pulls`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ title, head, base, body, draft }),
+  }, token);
+  return { number: data.number, url: data.html_url };
+}
+
+/**
+ * List open PRs whose head branch starts with an optional prefix.
+ * Returns array of PR objects from the GitHub API.
+ */
+export async function listPRs(repo, token, headPrefix) {
+  const data = await ghFetch(`/repos/${repo}/pulls?state=open&per_page=50`, {}, token);
+  if (headPrefix) return data.filter(pr => pr.head.ref.startsWith(headPrefix));
+  return data;
+}
+
+/**
+ * Merge a PR by number (squash).
+ */
+export async function mergePR(repo, prNumber, token) {
+  return ghFetch(`/repos/${repo}/pulls/${prNumber}/merge`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ merge_method: 'squash' }),
+  }, token);
 }
