@@ -18,7 +18,7 @@
  * messages in the same Slack thread auto-route to this post.
  */
 
-import { generateText, tool } from 'ai';
+import { generateText, tool, stepCountIs } from 'ai';
 import { createAnthropic } from '@ai-sdk/anthropic';
 import { z } from 'zod';
 import { getRef, createBranch, createFileOnBranch, createPR, listDir, readFile } from './github.js';
@@ -42,7 +42,7 @@ export async function createBlogPost(intent, threadTs, env) {
   const tools = {
     web_search: tool({
       description: 'Search the web for facts, examples, data, or recent context. Keep queries specific and technical. Use sparingly — 2-3 searches max.',
-      parameters: z.object({
+      inputSchema: z.object({
         query: z.string().describe('A focused, specific search query.'),
       }),
       execute: async ({ query }) => tavilySearch(query, env.TAVILY_API_KEY),
@@ -50,7 +50,7 @@ export async function createBlogPost(intent, threadTs, env) {
 
     read_existing_post: tool({
       description: 'Read an existing blog post to calibrate voice, depth, and to avoid repeating covered ground.',
-      parameters: z.object({
+      inputSchema: z.object({
         filename: z.string().describe('Filename from the existing posts list.'),
       }),
       execute: async ({ filename }) => {
@@ -70,7 +70,7 @@ export async function createBlogPost(intent, threadTs, env) {
         'annotate that passage inline with <!-- [RESEARCH] topic: what needs deeper investigation --> ',
         'and list it in research_needed. Be honest about the limits of what a web search can confirm.',
       ].join(' '),
-      parameters: z.object({
+      inputSchema: z.object({
         title: z.string().describe('Post title — specific, compelling, not a listicle'),
         slug: z.string().describe('URL slug, e.g. "enterprise-ai-org-design-tradeoffs"'),
         draft_content: z.string().describe('Full markdown with frontmatter. Annotate uncertain passages with <!-- [RESEARCH] topic: ... -->'),
@@ -83,7 +83,7 @@ export async function createBlogPost(intent, threadTs, env) {
     model: anthropic('claude-opus-4-6'),
     tools,
     toolChoice: 'auto',
-    maxSteps: STEP_LIMIT,
+    stopWhen: stepCountIs(STEP_LIMIT),
     system: `You are an editorial agent writing a blog post for Doug Hatcher at doughatcher.com.
 
 Doug is a senior technical architect in mid-market commerce (SFCC, Shopify Plus) with Adobe corporate experience.
@@ -123,7 +123,7 @@ tags: []
   const submitCall = toolCalls.find(tc => tc.toolName === 'submit_draft');
   if (!submitCall) throw new Error('Agent did not produce a draft');
 
-  const { title, slug, draft_content, research_needed } = submitCall.args;
+  const { title, slug, draft_content, research_needed } = submitCall.input;
   const branch = `blog/${today}-${slug}`;
   const filePath = `${contentPath}/${today}-${slug}.md`;
 

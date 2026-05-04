@@ -23,6 +23,7 @@ import { createBlogPost } from './services/post-creator.js';
 import { mergeBlogPost } from './services/pr-merger.js';
 import { slackReply } from './services/slack-reply.js';
 import { getThreadContext, setThreadContext } from './services/thread-context.js';
+import { getLatestIdeaBatch } from './services/github.js';
 
 const app = new Hono();
 
@@ -87,6 +88,32 @@ async function handleMessage(event, env) {
         env
       );
       await postContent(channel, replyThread, threadCtx.title, result.content, [], env);
+      return;
+    }
+
+    // Allow referencing an idea by number from the most recent Looper batch
+    // (e.g. "#3 ...", "for #1 ...", "idea 2 ...").
+    const numberedCtx = await resolveNumberedIdea(cleanText, env);
+    if (numberedCtx) {
+      const intent = {
+        action: 'update_blog_post',
+        summary: `Revise "${numberedCtx.title}": ${numberedCtx.instructions.slice(0, 80)}`,
+        blogInstructions: numberedCtx.instructions,
+      };
+      const result = await updateBlogPost(intent, env, numberedCtx);
+      await slackReply(
+        channel, replyThread,
+        `✅ Updated #${numberedCtx.number} — *${numberedCtx.title}*. <${result.commitUrl}|View commit> · <${numberedCtx.prUrl}|PR>`,
+        env
+      );
+      await postContent(channel, replyThread, numberedCtx.title, result.content, [], env);
+      // Persist context so follow-ups in this thread don't need the number again
+      await setThreadContext(replyThread, {
+        branch: numberedCtx.branch,
+        filePath: numberedCtx.filePath,
+        prUrl: numberedCtx.prUrl,
+        title: numberedCtx.title,
+      }, env);
       return;
     }
 
@@ -205,6 +232,37 @@ async function postContent(channel, threadTs, title, content, researchNeeded, en
       env
     );
   }
+}
+
+// ── #N idea reference resolver ────────────────────────────────────────────────
+// Matches messages that lead with a numeric reference to an idea from the most
+// recent Looper batch. Returns full context (branch, file, PR, title) plus the
+// stripped instructions, or null if no number ref was found / no batch exists.
+async function resolveNumberedIdea(text, env) {
+  const re = /^\s*(?:(?:on|for|re|about)\s+)?(?:#|idea\s+|number\s+|no\.?\s*)(\d{1,2})\b[\s,.:;\-—)]*/i;
+  const m = text.match(re);
+  if (!m) return null;
+  const n = parseInt(m[1], 10);
+  if (n < 1 || n > 10) return null;
+
+  const batch = await getLatestIdeaBatch(env.DOTCOM_REPO, env.GITHUB_TOKEN);
+  if (batch.length === 0 || n > batch.length) return null;
+
+  const pr = batch[n - 1];
+  const branch = pr.head.ref;
+  const slug = branch.replace(/^blog\//, '');
+  const filePath = `${env.BLOG_CONTENT_PATH}/${slug}.md`;
+  const instructions = text.slice(m[0].length).trim();
+  if (!instructions) return null; // bare "#3" with no edit guidance
+
+  return {
+    number: n,
+    branch,
+    filePath,
+    prUrl: pr.html_url,
+    title: pr.title,
+    instructions,
+  };
 }
 
 export default app;
