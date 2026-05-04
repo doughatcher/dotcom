@@ -51,20 +51,28 @@ The product hire burns out or leaves. The engineering team feels like they faile
 
 They did not hire the wrong person. They hired in the wrong order.
 
-The investors in that conversation understood something that most organizations learn the hard way: engineering stability is a prerequisite for product direction, not a parallel workstream.
+Here is what makes this harder than it looks. Most teams try to stabilize engineering by keeping the same people who built the instability. That does not work. The team that got you here is not the team that gets you stable. They are too close to it. They have too many habits baked in. They built the patterns that are now the problem.
+
+Engineering will not stabilize if you hand the stabilization work to the same group that created the mess. You need fresh perspective. New direction. People who have solved this problem before and are not defensive about the current state. Bring in someone who can support the existing team without protecting the existing approach. If you want different results, you need different ingredients.
+
+I have seen founders burn months asking their current engineering team to fix themselves. It rarely works. Not because the team is bad. Because you cannot see your own blind spots clearly enough to fix them. An outside perspective cuts through that.
+
+The investors in that conversation understood something most organizations learn the hard way. Engineering stability is a prerequisite for product direction. Not a parallel workstream.
 
 This does not mean you need perfect engineering before you can think about product. Perfection is not the bar. The bar is: can the team ship a change with confidence? Can they deploy without a war room? Can they run a regression suite and trust the results? Can they recover from a bad deploy in minutes, not hours?
 
 If the answer to those questions is no, then every product initiative you launch will be filtered through an unreliable execution layer. Features will take longer than estimated. Bugs will ship to production. Customer-facing incidents will interrupt roadmap work. The product leader will spend their time triaging, not building.
 
-The sequence that works is boring. First, get deployments automated and reliable. Second, get test coverage to the point where regressions are caught before they ship. Third, get environment management stable enough that developers can work without stepping on each other. Fourth, now bring in the person who sets direction.
+The sequence that works is boring. First, get deployments automated and reliable. Second, get test coverage to the point where regressions are caught before they ship. Third, get environment management stable enough that developers can work without stepping on each other. Fourth, bring in the person who sets direction.
 
-Steps one through three do not require a product leader. They require engineering discipline, DevOps investment, and organizational patience.
+Steps one through three do not require a product leader. They require engineering discipline, DevOps investment, and organizational patience. They also require people who know what good looks like and are not too attached to the current state to demand it.
 
-I have watched this play out at agencies, at SaaS companies, and at merchants building internal platforms. The shape is always the same. The temptation to skip to "vision" before "stability" is strong because vision is exciting and stability is not. But the organizations that get the sequence right build faster in year two than the ones that hired for vision in year one and spent that year fighting their own infrastructure.
+I have watched this play out at agencies, at SaaS companies, and at merchants building internal platforms. The shape is always the same. The temptation to skip to "vision" before "stability" is strong because vision is exciting and stability is not. The organizations that get the sequence right build faster in year two than the ones that hired for vision in year one and spent that year fighting their own infrastructure.
 
 The investor's advice was blunt: fix engineering first. It was also correct.
 
-If your team cannot deploy with confidence today, the most valuable hire you can make is not a product leader. It is the person, or the investment, that makes deployments boring. Product comes after. Not before. Not in parallel. After.
+If your team cannot deploy with confidence today, the most valuable hire you can make is not a product leader. It is the person who has stabilized engineering before and can do it again. Bring them in to support your current team. Give them the authority to change what needs changing. Then hire for product.
+
+Same team, same habits, same results. Different ingredients produce different outcomes.
 
 The sequence is the strategy.
