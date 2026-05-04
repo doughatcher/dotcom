@@ -155,6 +155,26 @@ export async function listPRs(repo, token, headPrefix) {
 }
 
 /**
+ * Return the latest editorial-loop batch of draft blog PRs, ordered to match
+ * the numbered Slack post (idea 1 first). Groups by the YYYY-MM-DD prefix
+ * embedded in the `blog/<date>-<slug>` branch name and picks the most recent
+ * date, then sorts that group by PR creation time ascending.
+ */
+export async function getLatestIdeaBatch(repo, token) {
+  const prs = await ghFetch(`/repos/${repo}/pulls?state=open&per_page=50`, {}, token);
+  const dateOf = (pr) => {
+    const m = pr.head.ref.match(/^blog\/(\d{4}-\d{2}-\d{2})-/);
+    return m ? m[1] : null;
+  };
+  const drafts = prs.filter(pr => pr.draft && dateOf(pr));
+  if (drafts.length === 0) return [];
+  const latestDate = drafts.map(dateOf).sort().pop();
+  return drafts
+    .filter(pr => dateOf(pr) === latestDate)
+    .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+}
+
+/**
  * Merge a PR by number (squash).
  */
 export async function mergePR(repo, prNumber, token) {

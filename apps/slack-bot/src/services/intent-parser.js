@@ -25,7 +25,7 @@ export async function parseIntent(userText, env) {
     tools: {
       parse_intent: tool({
         description: 'Parse the user\'s editorial feedback into a structured action plan',
-        parameters: z.object({
+        inputSchema: z.object({
           action: z.enum([
             'update_voice_profile',
             'update_blog_post',
@@ -80,5 +80,5 @@ For blogInstructions, synthesize their intent into clear instructions — do not
     }],
   });
 
-  return toolCalls[0]?.args ?? { action: 'unclear', summary: userText };
+  return toolCalls[0]?.input ?? { action: 'unclear', summary: userText };
 }
