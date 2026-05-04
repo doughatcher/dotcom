@@ -155,10 +155,11 @@ export async function listPRs(repo, token, headPrefix) {
 }
 
 /**
- * Return the latest editorial-loop batch of draft blog PRs, ordered to match
+ * Return the latest editorial-loop batch of open blog PRs, ordered to match
  * the numbered Slack post (idea 1 first). Groups by the YYYY-MM-DD prefix
  * embedded in the `blog/<date>-<slug>` branch name and picks the most recent
- * date, then sorts that group by PR creation time ascending.
+ * date, then sorts that group by PR creation time ascending. Includes both
+ * draft and ready-for-review PRs since pr-creator.js opens them as the latter.
  */
 export async function getLatestIdeaBatch(repo, token) {
   const prs = await ghFetch(`/repos/${repo}/pulls?state=open&per_page=50`, {}, token);
@@ -166,10 +167,10 @@ export async function getLatestIdeaBatch(repo, token) {
     const m = pr.head.ref.match(/^blog\/(\d{4}-\d{2}-\d{2})-/);
     return m ? m[1] : null;
   };
-  const drafts = prs.filter(pr => pr.draft && dateOf(pr));
-  if (drafts.length === 0) return [];
-  const latestDate = drafts.map(dateOf).sort().pop();
-  return drafts
+  const blogPRs = prs.filter(pr => dateOf(pr));
+  if (blogPRs.length === 0) return [];
+  const latestDate = blogPRs.map(dateOf).sort().pop();
+  return blogPRs
     .filter(pr => dateOf(pr) === latestDate)
     .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
 }
