@@ -76,6 +76,17 @@ export async function postToMicroblog(text) {
   if (process.env.MICROBLOG_DESTINATION_UID) {
     params.append('mp-destination', process.env.MICROBLOG_DESTINATION_UID);
   }
+  // micro.blog requires per-post opt-in for syndication — it does NOT honor
+  // the account-level cross-post default for API-posted entries. Pass each
+  // destination UID as a separate mp-syndicate-to[] form field.
+  // Discover UIDs at GET /micropub?q=syndicate-to (e.g. "linkedin", "mastodon").
+  const syndicateTo = (process.env.MICROBLOG_SYNDICATE_TO || '')
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean);
+  for (const uid of syndicateTo) {
+    params.append('mp-syndicate-to[]', uid);
+  }
 
   const res = await fetch('https://micro.blog/micropub', {
     method: 'POST',

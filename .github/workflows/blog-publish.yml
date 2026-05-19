@@ -57,6 +57,9 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           MICROBLOG_APP_TOKEN: ${{ secrets.MICROBLOG_APP_TOKEN }}
           MICROBLOG_DESTINATION_UID: ${{ vars.MICROBLOG_DESTINATION_UID }}
+          # Comma-separated UIDs from GET /micropub?q=syndicate-to (linkedin, mastodon, bluesky, threads).
+          # Defaults to 'linkedin' if the repo variable is unset.
+          MICROBLOG_SYNDICATE_TO: ${{ vars.MICROBLOG_SYNDICATE_TO || 'linkedin' }}
           POST_PATH: ${{ steps.post.outputs.path }}
           BASE_URL: https://doughatcher.com
         run: node apps/editorial-loop/publish.js
