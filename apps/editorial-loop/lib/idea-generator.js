@@ -38,7 +38,7 @@ const IDEA_TOOL = {
             source_material: { type: 'string', description: 'Vault files or patterns that informed this idea' },
             slug: { type: 'string', description: 'URL-friendly slug, e.g. "optimism-cascade-replatform"' },
             draft_content: { type: 'string', description: 'Full markdown draft including frontmatter, 800-1200 words' },
-            linkedin_copy: { type: 'string', description: '250-400 word LinkedIn post. Opens with a specific claim or observation — not "excited to share." Written for two audiences at once: executive leaders (organizational judgment, strategic outcomes, what broke and why) and technical leaders (specific tradeoffs, architectural reasoning, the thing practitioners actually wrestle with). No motivational language. No buzzwords. Ends with exactly: "Full post: {{url}}" — nothing else.' },
+            linkedin_copy: { type: 'string', description: 'Short LinkedIn tease, ≤280 characters TOTAL including the URL. 1–3 short lines max. Opens with a specific claim or observation — not "excited to share." Above-the-fold on LinkedIn mobile: no truncation, no "...see more" link. Lift the strongest sentence(s) from the post itself rather than paraphrasing. No motivational language. No buzzwords. Ends with exactly: "Full post: {{url}}" — nothing else.' },
           },
         },
       },
@@ -151,17 +151,16 @@ tags: []
 Body format: short punchy paragraphs, no headers needed for shorter posts, use plain markdown.
 
 **For linkedin_copy:**
-Write as a senior technical practitioner who leads engineering orgs and ships real product. The post should speak to two audiences simultaneously:
-- Executive and business leaders: organizational awareness, strategic judgment, what the decision costs and why it matters, the failure mode nobody talks about
-- Technical leaders and architects: specific tradeoffs, concrete failure modes, the implementation detail that changes everything
+This is a TEASE, not the post. It must stay above the LinkedIn mobile fold — no "...see more" link, no truncation. Hard ceiling: 280 characters TOTAL including the "Full post: {{url}}" line.
 
-Open with a single specific observation or claim — the kind of sentence that makes a VP of Engineering stop scrolling because they've lived it. Not a question. Not an announcement. A statement of something true and underappreciated.
+Structure (1–3 short lines, blank line between):
+1. The strongest single sentence from the post — the claim that makes a VP of Engineering stop scrolling because they have lived it.
+2. (Optional) One more sentence that delivers the counterintuitive punchline.
+3. \`Full post: {{url}}\` — exactly this, nothing else.
 
-Middle: show the thinking. What the obvious answer gets wrong. What the counterintuitive principle is. Be specific enough that a technical reader recognizes real experience.
+Prefer lifting verbatim sentences from the draft over paraphrasing. The point is to make the reader click through, not to summarize the argument.
 
-End with exactly: "Full post: {{url}}" — no call-to-action fluff, no "let me know your thoughts."
-
-No em-dashes. No hedging. No "I'm thrilled to share." Sound like someone who has already solved this problem twice.`;
+No em-dashes. No hedging. No "I'm thrilled to share." No call-to-action fluff. Sound like someone who has already solved this problem twice.`;
 
   const response = await client.messages.create({
     model: 'claude-opus-4-6',

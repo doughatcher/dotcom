@@ -32,26 +32,28 @@ export async function generateMicroblogPost(postContent, postUrl) {
 
   const response = await client.messages.create({
     model: 'claude-opus-4-6',
-    max_tokens: 1024,
+    max_tokens: 512,
     messages: [{
       role: 'user',
-      content: `You are writing a LinkedIn post for Doug Hatcher, a Director of Engineering with deep roots in commerce architecture and platform engineering.
+      content: `You are writing a short LinkedIn tease for Doug Hatcher, a Director of Engineering with deep roots in commerce architecture and platform engineering.
 
-Write for two audiences at once: executive leaders (what broke, why it matters to the org, the strategic judgment call) and technical leaders (the specific tradeoff, the implementation detail that changes everything, the failure mode practitioners live with).
+This is a TEASE, not the post. Stay above the LinkedIn mobile fold — no "...see more" link, no truncation. Hard ceiling: 280 characters TOTAL including the final URL line.
 
-Voice rules:
-- Open with a specific claim or observation — not a question, not an announcement, not "I'm excited to share"
-- 300-500 words
-- No em-dashes. No hedging. No buzzwords.
-- Sound like someone who has already solved this problem twice and is talking to a peer, not performing on LinkedIn
-- End with exactly: "Full post: ${postUrl}"
+Structure (1–3 short lines, blank line between):
+1. The strongest single sentence from the post — the claim that makes a VP of Engineering stop scrolling because they have lived it.
+2. (Optional) One more sentence with the counterintuitive punchline.
+3. "Full post: ${postUrl}" — exactly this, nothing else.
+
+Prefer lifting verbatim sentences from the post over paraphrasing.
+
+No em-dashes. No hedging. No buzzwords. No "I'm thrilled to share." No call-to-action fluff.
 
 The full blog post:
 ---
 ${postContent}
 ---
 
-Write only the LinkedIn post text. No commentary, no alternatives.`,
+Write only the LinkedIn text. No commentary, no alternatives. Count characters before responding — if over 280, cut.`,
     }],
   });
 
