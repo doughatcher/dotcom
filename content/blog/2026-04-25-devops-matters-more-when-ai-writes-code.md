@@ -5,9 +5,9 @@ draft: false
 pillar: "Wild Card"
 tags: []
 linkedin_copy: |
-  AI code generation made your developers faster. It did not make your deployment pipeline wider.
+  The bottleneck moved. It used to be code generation. Now it is deployment reliability.
   
-  DevOps is not a supporting function in this world. It is the binding constraint.
+  Input metrics tell you the engine runs. Deployment metrics tell you the brakes work.
   
   Full post: {{url}}
 ---
