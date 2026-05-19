@@ -1,5 +1,5 @@
 ---
-title: "DevOps Matters More When AI Writes the Code"
+title: "Your AI Copilot Doesn't Know What Goes Wrong After Launch"
 date: 2026-04-25
 draft: false
 pillar: "Wild Card"
