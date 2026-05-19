@@ -1,7 +1,13 @@
 {{ define "main" }}
 <div class="blog-header">
     <h1>Blog</h1>
+    <p class="blog-byline">I've shipped and migrated enough Adobe Commerce platforms to know which problems are the platform's fault. This is that log.</p>
     <p class="blog-description">Long-form thinking on commerce, technology, and the gap between how projects are sold and how they're delivered.</p>
+    <div class="blog-follow">
+        <a href="/feed.xml" class="follow-link">RSS</a>
+        <span class="follow-sep">·</span>
+        <a href="https://linkedin.com/in/{{ .Site.Params.linkedin_username }}" class="follow-link" target="_blank" rel="noopener">Follow on LinkedIn</a>
+    </div>
 </div>
 
 <div class="posts-list blog-list">

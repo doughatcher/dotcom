@@ -1,5 +1,5 @@
 ---
-title: "DevOps Matters More When AI Writes the Code"
+title: "The Bottleneck Is No Longer Writing Code"
 date: 2026-04-25
 draft: false
 pillar: "Wild Card"
