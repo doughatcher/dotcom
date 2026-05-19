@@ -7,16 +7,6 @@ tags: []
 linkedin_copy: |
   AI code generation made your developers faster. It did not make your deployment pipeline wider.
   
-  Every team I have talked to that adopted AI tooling early has the same story. Output is up. Pull requests are up. Merge frequency is up. And incidents are up too. Not because the AI code is bad. Because the pipeline, the regression suite, and the release confidence mechanisms were sized for the old throughput. Nobody resized them.
-  
-  This is the part of the AI-in-engineering conversation that keeps getting skipped. The bottleneck moved. It used to be code generation. Now it is deployment reliability. Regression coverage. Rollback speed. The infrastructure that absorbs velocity.
-  
-  Regression suites are the sharpest problem. They were built over years by developers who knew where things break. AI-generated code does not share that mental model. It introduces patterns that are correct in isolation and surprising in combination. The existing test suite was not written for this.
-  
-  The teams handling this well share a pattern. They treat deployment infrastructure as a first-class investment alongside AI adoption. They use AI to generate test cases, not just production code. They monitor every release automatically and roll back without a human in the loop.
-  
-  The KPIs that matter in an AI-accelerated org are not tokens consumed or lines generated. They are deployment success rate, mean time to recovery, change failure rate, and regression pass rate over time. Input metrics tell you the engine runs. Deployment metrics tell you the brakes work.
-  
   DevOps is not a supporting function in this world. It is the binding constraint.
   
   Full post: {{url}}
