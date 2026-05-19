@@ -1,7 +1,8 @@
 name: Auto-merge Blog Draft PRs
 
 # When you approve a blog/ draft PR on GitHub, it squash-merges automatically.
-# The blog-publish workflow then fires on the push to main and handles LinkedIn.
+# The blog-publish workflow then fires on the push to main and posts a note to
+# micro.blog, which syndicates to LinkedIn (and any other configured cross-posts).
 
 on:
   pull_request_review:
