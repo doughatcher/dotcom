@@ -6,13 +6,19 @@ on:
       - main
     paths:
       - 'content/blog/**.md'
+  workflow_dispatch:
+    inputs:
+      post_path:
+        description: "Override: cross-post a specific file (e.g. content/blog/2026-04-25-devops-matters-more-when-ai-writes-code.md)"
+        required: false
+        type: string
 
 jobs:
-  linkedin:
+  microblog-crosspost:
     runs-on: ubuntu-latest
-    # Only run if LINKEDIN_ACCESS_TOKEN is set — lets you disable cross-posting
-    # by removing the secret without touching the workflow
-    if: ${{ vars.LINKEDIN_ENABLED == 'true' }}
+    # Kill switch — set the repo variable MICROBLOG_CROSSPOST_ENABLED=true to enable.
+    # Disable cross-posting by unsetting it.
+    if: ${{ vars.MICROBLOG_CROSSPOST_ENABLED == 'true' }}
 
     steps:
       - name: Checkout
@@ -23,10 +29,15 @@ jobs:
       - name: Find new/changed blog post
         id: post
         run: |
-          CHANGED=$(git diff --name-only HEAD~1 HEAD -- 'content/blog/*.md' \
-            | grep -v '\.gitkeep' | head -1)
+          if [ -n "${{ inputs.post_path }}" ]; then
+            CHANGED="${{ inputs.post_path }}"
+            echo "Using manual override: ${CHANGED}"
+          else
+            CHANGED=$(git diff --name-only HEAD~1 HEAD -- 'content/blog/*.md' \
+              | grep -v '\.gitkeep' | head -1)
+            echo "Found: ${CHANGED}"
+          fi
           echo "path=${CHANGED}" >> $GITHUB_OUTPUT
-          echo "Found: ${CHANGED}"
 
       - name: Setup Node.js
         if: steps.post.outputs.path != ''
@@ -40,12 +51,12 @@ jobs:
         if: steps.post.outputs.path != ''
         run: npm ci --prefix apps/editorial-loop
 
-      - name: Generate LinkedIn post + publish
+      - name: Generate micro.blog note + publish
         if: steps.post.outputs.path != ''
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          LINKEDIN_ACCESS_TOKEN: ${{ secrets.LINKEDIN_ACCESS_TOKEN }}
-          LINKEDIN_PERSON_URN: ${{ secrets.LINKEDIN_PERSON_URN }}
+          MICROBLOG_APP_TOKEN: ${{ secrets.MICROBLOG_APP_TOKEN }}
+          MICROBLOG_DESTINATION_UID: ${{ vars.MICROBLOG_DESTINATION_UID }}
           POST_PATH: ${{ steps.post.outputs.path }}
           BASE_URL: https://doughatcher.com
         run: node apps/editorial-loop/publish.js
@@ -53,6 +64,8 @@ jobs:
       - name: Summary
         if: steps.post.outputs.path != ''
         run: |
-          echo "## LinkedIn Cross-Post" >> $GITHUB_STEP_SUMMARY
+          echo "## micro.blog Cross-Post" >> $GITHUB_STEP_SUMMARY
           echo "Post: \`${{ steps.post.outputs.path }}\`" >> $GITHUB_STEP_SUMMARY
           echo "Published at: $(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Micro.blog will syndicate to any cross-post destinations (LinkedIn, etc.) configured on the account." >> $GITHUB_STEP_SUMMARY
