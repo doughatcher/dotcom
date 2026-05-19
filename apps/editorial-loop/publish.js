@@ -20,9 +20,9 @@ async function main() {
 
   const content = fs.readFileSync(POST_PATH, 'utf8');
 
-  // Derive public URL from file path: content/blog/2026-04-18-my-slug.md → /blog/my-slug/
-  const filename = POST_PATH.split('/').pop().replace('.md', '');
-  const slug = filename.replace(/^\d{4}-\d{2}-\d{2}-/, '');
+  // Derive public URL from file path: content/blog/2026-04-18-my-slug.md → /blog/2026-04-18-my-slug/
+  // Hugo permalink includes the date prefix; the full basename (sans .md) is the slug.
+  const slug = POST_PATH.split('/').pop().replace('.md', '');
   const postUrl = `${BASE_URL}/blog/${slug}/`;
 
   console.log(`📖 Post: ${POST_PATH}`);
