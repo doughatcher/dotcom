@@ -1,0 +1,48 @@
+name: Micro.blog Destinations
+
+# On-demand tool: queries Micropub's q=syndicate-to endpoint with the app
+# token and prints the available cross-posting destinations to the run log.
+# Use this whenever you add a new destination on micro.blog (Account →
+# Cross-posting → connect LinkedIn / Bluesky / Mastodon / etc.) to discover
+# the actual UIDs to put in MICROBLOG_SYNDICATE_TO.
+#
+# The token never appears in the log — GitHub Actions auto-masks secret
+# values.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  list:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Query Micropub for cross-post destinations
+        env:
+          MICROBLOG_APP_TOKEN: ${{ secrets.MICROBLOG_APP_TOKEN }}
+        run: |
+          if [ -z "$MICROBLOG_APP_TOKEN" ]; then
+            echo "::error::MICROBLOG_APP_TOKEN secret is not set"
+            exit 1
+          fi
+
+          echo "Querying https://micro.blog/micropub?q=syndicate-to ..."
+          echo ""
+
+          RESPONSE=$(curl -sSL -H "Authorization: Bearer $MICROBLOG_APP_TOKEN" \
+            "https://micro.blog/micropub?q=syndicate-to")
+
+          echo "Raw response:"
+          echo "$RESPONSE" | jq . 2>/dev/null || echo "$RESPONSE"
+          echo ""
+
+          echo "## Cross-posting destinations" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Paste any of these UIDs into the \`MICROBLOG_SYNDICATE_TO\` repo variable (comma-separated, no spaces) to opt those destinations into the syndication flow." >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| UID | Name |" >> $GITHUB_STEP_SUMMARY
+          echo "|-----|------|" >> $GITHUB_STEP_SUMMARY
+          echo "$RESPONSE" | jq -r '."syndicate-to"[] | "| `\(.uid)` | \(.name) |"' >> $GITHUB_STEP_SUMMARY 2>/dev/null || \
+            echo "| _Could not parse — see raw response above_ | |" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Current \`MICROBLOG_SYNDICATE_TO\` value: \`${{ vars.MICROBLOG_SYNDICATE_TO || 'linkedin (default)' }}\`" >> $GITHUB_STEP_SUMMARY
