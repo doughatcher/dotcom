@@ -1,0 +1,84 @@
+name: Syndicate on Label
+
+# After-the-fact syndication trigger. When you add the `syndicate-linkedin`
+# label to a PR — merged or open — this fires the Micropub cross-post for the
+# blog post that PR introduced. Designed for "I changed my mind, ship it"
+# decisions made from your phone.
+
+on:
+  pull_request:
+    types: [labeled]
+
+jobs:
+  syndicate:
+    runs-on: ubuntu-latest
+    # Only act on the syndicate-linkedin label on a PR that introduced a blog post,
+    # and only when crossposting is enabled at the repo level.
+    if: |
+      github.event.label.name == 'syndicate-linkedin' &&
+      vars.MICROBLOG_CROSSPOST_ENABLED == 'true'
+
+    steps:
+      - name: Resolve blog post path from PR
+        id: post
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          PR_NUM=${{ github.event.pull_request.number }}
+          POST=$(gh pr view "$PR_NUM" --repo ${{ github.repository }} \
+            --json files --jq '.files[].path' \
+            | grep -E '^content/blog/.*\.md$' \
+            | grep -v '_index\.md' \
+            | head -1)
+          if [ -z "$POST" ]; then
+            echo "::warning::No blog post file found in PR #$PR_NUM — nothing to syndicate."
+            echo "path=" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          echo "Resolved blog post: $POST"
+          echo "path=$POST" >> $GITHUB_OUTPUT
+
+      - name: Checkout main (post must already be merged)
+        if: steps.post.outputs.path != ''
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Verify post file exists on main
+        if: steps.post.outputs.path != ''
+        run: |
+          if [ ! -f "${{ steps.post.outputs.path }}" ]; then
+            echo "::error::Post ${{ steps.post.outputs.path }} not on main yet — merge the PR first, then re-add the label."
+            exit 1
+          fi
+
+      - name: Setup Node.js
+        if: steps.post.outputs.path != ''
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: apps/editorial-loop/package-lock.json
+
+      - name: Install dependencies
+        if: steps.post.outputs.path != ''
+        run: npm ci --prefix apps/editorial-loop
+
+      - name: Generate micro.blog note + publish
+        if: steps.post.outputs.path != ''
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          MICROBLOG_APP_TOKEN: ${{ secrets.MICROBLOG_APP_TOKEN }}
+          MICROBLOG_DESTINATION_UID: ${{ vars.MICROBLOG_DESTINATION_UID }}
+          MICROBLOG_SYNDICATE_TO: ${{ vars.MICROBLOG_SYNDICATE_TO || 'linkedin' }}
+          POST_PATH: ${{ steps.post.outputs.path }}
+          BASE_URL: https://doughatcher.com
+        run: node apps/editorial-loop/publish.js
+
+      - name: Summary
+        if: always() && steps.post.outputs.path != ''
+        run: |
+          echo "## After-the-Fact Syndication" >> $GITHUB_STEP_SUMMARY
+          echo "Triggered by: \`syndicate-linkedin\` label on PR #${{ github.event.pull_request.number }}" >> $GITHUB_STEP_SUMMARY
+          echo "Post: \`${{ steps.post.outputs.path }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "Time: $(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY

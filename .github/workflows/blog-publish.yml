@@ -1,5 +1,11 @@
 name: Publish Blog Post
 
+# Cross-posts a new blog post to Micro.blog as a note, which then syndicates to
+# configured destinations (LinkedIn, etc.). Default behavior is SITE-ONLY: the
+# Micropub call only fires if the PR that introduced the post carried the
+# `syndicate-linkedin` label. To opt in, add the label on the PR before merge
+# (or after — see syndicate-on-label.yml for the after-the-fact path).
+
 on:
   push:
     branches:
@@ -12,12 +18,16 @@ on:
         description: "Override: cross-post a specific file (e.g. content/blog/2026-04-25-devops-matters-more-when-ai-writes-code.md)"
         required: false
         type: string
+      force_syndicate:
+        description: "Force-syndicate even if the source PR didn't carry syndicate-linkedin"
+        required: false
+        type: boolean
+        default: false
 
 jobs:
   microblog-crosspost:
     runs-on: ubuntu-latest
     # Kill switch — set the repo variable MICROBLOG_CROSSPOST_ENABLED=true to enable.
-    # Disable cross-posting by unsetting it.
     if: ${{ vars.MICROBLOG_CROSSPOST_ENABLED == 'true' }}
 
     steps:
@@ -39,8 +49,33 @@ jobs:
           fi
           echo "path=${CHANGED}" >> $GITHUB_OUTPUT
 
-      - name: Setup Node.js
+      - name: Check source PR for syndicate-linkedin label
+        id: gate
         if: steps.post.outputs.path != ''
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [ "${{ inputs.force_syndicate }}" = "true" ]; then
+            echo "Force-syndicate input is true — bypassing label gate"
+            echo "syndicate=true" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+          # Find the merge commit's source PR; read its labels.
+          SHA="${{ github.sha }}"
+          PR_LABELS=$(gh api "repos/${{ github.repository }}/commits/${SHA}/pulls" \
+            --jq '.[0].labels[].name' 2>/dev/null || true)
+          echo "Source PR labels:"
+          echo "${PR_LABELS}"
+          if echo "${PR_LABELS}" | grep -qx 'syndicate-linkedin'; then
+            echo "✅ syndicate-linkedin label present — proceeding with cross-post"
+            echo "syndicate=true" >> $GITHUB_OUTPUT
+          else
+            echo "⏭️  No syndicate-linkedin label on source PR — skipping cross-post (site-only publish)"
+            echo "syndicate=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Setup Node.js
+        if: steps.gate.outputs.syndicate == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: '20'
@@ -48,11 +83,11 @@ jobs:
           cache-dependency-path: apps/editorial-loop/package-lock.json
 
       - name: Install dependencies
-        if: steps.post.outputs.path != ''
+        if: steps.gate.outputs.syndicate == 'true'
         run: npm ci --prefix apps/editorial-loop
 
       - name: Generate micro.blog note + publish
-        if: steps.post.outputs.path != ''
+        if: steps.gate.outputs.syndicate == 'true'
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           MICROBLOG_APP_TOKEN: ${{ secrets.MICROBLOG_APP_TOKEN }}
@@ -69,6 +104,10 @@ jobs:
         run: |
           echo "## micro.blog Cross-Post" >> $GITHUB_STEP_SUMMARY
           echo "Post: \`${{ steps.post.outputs.path }}\`" >> $GITHUB_STEP_SUMMARY
-          echo "Published at: $(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Micro.blog will syndicate to any cross-post destinations (LinkedIn, etc.) configured on the account." >> $GITHUB_STEP_SUMMARY
+          if [ "${{ steps.gate.outputs.syndicate }}" = "true" ]; then
+            echo "Status: ✅ Cross-posted to Micro.blog → LinkedIn at $(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Status: ⏭️ Skipped (no \`syndicate-linkedin\` label on source PR)" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "To syndicate this post after-the-fact: add the \`syndicate-linkedin\` label to the merged PR. The \`syndicate-on-label\` workflow will pick it up automatically." >> $GITHUB_STEP_SUMMARY
+          fi
