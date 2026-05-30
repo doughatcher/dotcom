@@ -66,6 +66,24 @@ async function resolveRedditShareUrl(url) {
   return url;
 }
 
+// Hostnames that serve Reddit's chrome (Snoo logo, subreddit avatars, UI
+// assets) — when og:image points here, the image isn't actual post content,
+// so the theme should render it as a small badge rather than a hero card.
+const REDDIT_FALLBACK_IMAGE_HOSTS = new Set([
+  'www.redditstatic.com',
+  'redditstatic.com',
+  'styles.redditmedia.com',
+]);
+
+function isRedditFallbackImage(imageUrl) {
+  if (!imageUrl) return false;
+  try {
+    return REDDIT_FALLBACK_IMAGE_HOSTS.has(new URL(imageUrl).hostname);
+  } catch {
+    return false;
+  }
+}
+
 async function fetchRedditMetadata(url) {
   const resolvedUrl = await resolveRedditShareUrl(url);
 
@@ -84,11 +102,13 @@ async function fetchRedditMetadata(url) {
           post.preview?.images?.[0]?.source?.url?.replace(/&amp;/g, '&') ||
           null;
         const thumbImg = post.thumbnail && !badThumbnails.has(post.thumbnail) ? post.thumbnail : null;
+        const image = previewImg || thumbImg || null;
         return {
           title: post.title,
           description: post.selftext ? post.selftext.slice(0, 200) : null,
-          image: previewImg || thumbImg || null,
+          image,
           domain: `r/${post.subreddit}`,
+          image_is_fallback: isRedditFallbackImage(image),
         };
       }
     }
@@ -106,7 +126,11 @@ async function fetchRedditMetadata(url) {
         return rIdx !== -1 ? `r/${parts[rIdx + 1]}` : 'reddit.com';
       } catch { return 'reddit.com'; }
     })();
-    return { ...htmlMeta, domain: subreddit };
+    return {
+      ...htmlMeta,
+      domain: subreddit,
+      image_is_fallback: isRedditFallbackImage(htmlMeta.image),
+    };
   }
 
   // Last resort: title from URL slug, no image

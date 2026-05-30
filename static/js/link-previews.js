@@ -83,7 +83,10 @@
 
     const card = document.createElement('a');
     card.href = url;
-    card.className = isRedditUrl(url) ? 'link-preview-card reddit-preview' : 'link-preview-card';
+    const classes = ['link-preview-card'];
+    if (isRedditUrl(url)) classes.push('reddit-preview');
+    if (metadata.image_is_fallback) classes.push('fallback-image');
+    card.className = classes.join(' ');
     card.target = '_blank';
     card.rel = 'noopener';
     
@@ -130,6 +133,7 @@
             title: data.title,
             description: data.description || '',
             image: data.image || null,
+            image_is_fallback: !!data.image_is_fallback,
           };
         }
       }
