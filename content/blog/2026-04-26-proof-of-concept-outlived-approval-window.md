@@ -1,7 +1,7 @@
 ---
 title: "The Proof of Concept That Outlived Its Approval Window"
 date: 2026-04-26
-pillar: "Wild Card"
+pillar: "The Post-Launch Reality"
 tags: [ai, enterprise, governance, architecture]
 linkedin_copy: |
   The fastest way to kill an AI initiative inside an enterprise is to succeed with it before the governance process catches up.
