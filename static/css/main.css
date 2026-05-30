@@ -952,6 +952,49 @@ a:hover {
   margin-bottom: 0.5rem;
 }
 
+/* Reddit cards whose og:image is just the Snoo logo or a subreddit avatar
+   (no actual post content image) — render the image as a small inline
+   badge beside the title instead of a giant hero. The Worker tells us
+   when this is the case via image_is_fallback=true. */
+.link-preview-card.reddit-preview.fallback-image {
+  display: flex;
+  align-items: stretch;
+  gap: 0;
+}
+
+.link-preview-card.reddit-preview.fallback-image .link-preview-image {
+  flex: 0 0 auto;
+  width: 64px;
+  max-height: none;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: hsl(var(--muted) / 0.4);
+}
+
+/* No blurred ambient background at badge size — it's just visual noise. */
+.link-preview-card.reddit-preview.fallback-image .link-preview-image::before {
+  display: none;
+}
+
+.link-preview-card.reddit-preview.fallback-image .link-preview-image img {
+  width: 40px;
+  height: 40px;
+  max-height: 40px;
+  object-fit: contain;
+  border-radius: 50%;
+}
+
+.link-preview-card.reddit-preview.fallback-image .link-preview-content {
+  flex: 1 1 auto;
+  min-width: 0; /* allow text truncation inside flex item */
+}
+
+.link-preview-card.reddit-preview.fallback-image:hover .link-preview-image img {
+  transform: none; /* the hover-scale on big hero images would jiggle the badge */
+}
+
 /* Video play badge overlaid on Reddit preview image */
 .link-preview-image {
   position: relative;
