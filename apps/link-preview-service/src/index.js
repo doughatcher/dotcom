@@ -194,9 +194,14 @@ export default {
     }
 
     try {
-      // Check KV cache first (populated by GitHub Actions at deploy time)
+      // Check KV cache first (populated by GitHub Actions at deploy time).
+      // CACHE_VERSION lets us invalidate the whole cache by bumping the
+      // string — entries from older versions stay around until TTL but are
+      // never read. Bump when the response shape changes (added
+      // image_is_fallback in v2).
+      const CACHE_VERSION = 'v2';
       if (env?.PREVIEW_CACHE) {
-        const cacheKey = `preview:${url}`;
+        const cacheKey = `preview:${CACHE_VERSION}:${url}`;
         const cached = await env.PREVIEW_CACHE.get(cacheKey, 'json');
         if (cached) {
           return new Response(JSON.stringify(cached), {
@@ -212,7 +217,7 @@ export default {
 
       // Write to KV cache for future requests (TTL: 7 days)
       if (env?.PREVIEW_CACHE && metadata.title) {
-        const cacheKey = `preview:${url}`;
+        const cacheKey = `preview:${CACHE_VERSION}:${url}`;
         await env.PREVIEW_CACHE.put(cacheKey, JSON.stringify(metadata), { expirationTtl: 604800 });
       }
 
