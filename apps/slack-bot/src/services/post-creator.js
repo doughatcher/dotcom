@@ -28,7 +28,7 @@ const STEP_LIMIT = 6;
 
 export async function createBlogPost(intent, threadTs, env) {
   const { blogTopic, blogInstructions } = intent;
-  const repo = env.DOTCOM_REPO;
+  const repo = env.BLOG_REPO;
   const contentPath = env.BLOG_CONTENT_PATH;
 
   const existingFiles = await listDir(repo, contentPath, env.GITHUB_TOKEN).catch(() => []);

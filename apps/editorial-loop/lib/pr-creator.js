@@ -1,11 +1,11 @@
 /**
  * pr-creator.js
  *
- * Creates a branch in doughatcher/dotcom, commits the post, and opens a PR
+ * Creates a branch in doughatcher/blog, commits the post, and opens a PR
  * ready for review. Returns the PR URL.
  *
  * Requires GH_TOKEN env var and gh CLI available in PATH.
- * Git identity must be configured in DOTCOM_PATH before calling (done in workflow).
+ * Git identity must be configured in BLOG_REPO_PATH before calling (done in workflow).
  */
 
 import { execSync } from 'child_process';
@@ -14,15 +14,15 @@ import os from 'os';
 import path from 'path';
 
 const BLOG_PATH = process.env.BLOG_PATH || './content/blog';
-// When running from a separate repo, git ops run inside the dotcom checkout
-const DOTCOM_PATH = process.env.DOTCOM_PATH || '.';
+// When running from a separate repo, git ops run inside the blog repo checkout
+const BLOG_REPO_PATH = process.env.BLOG_REPO_PATH || '.';
 
 export async function createDraftPR(idea) {
   const today = new Date().toISOString().split('T')[0];
   const branch = `blog/${today}-${idea.slug}`;
   const filePath = path.join(BLOG_PATH, `${today}-${idea.slug}.md`);
-  // git runs from DOTCOM_PATH, so it needs a path relative to that directory
-  const gitFilePath = path.relative(path.resolve(DOTCOM_PATH), path.resolve(filePath));
+  // git runs from BLOG_REPO_PATH, so it needs a path relative to that directory
+  const gitFilePath = path.relative(path.resolve(BLOG_REPO_PATH), path.resolve(filePath));
 
   try {
     // Delete stale remote branch if it exists (from a previous failed run)
@@ -47,7 +47,7 @@ export async function createDraftPR(idea) {
     fs.writeFileSync(bodyFile, body, 'utf8');
     const prUrl = run(
       `gh pr create \
-        --repo doughatcher/dotcom \
+        --repo doughatcher/blog \
         --head ${branch} \
         --title ${JSON.stringify(idea.title)} \
         --body-file ${JSON.stringify(bodyFile)} \
@@ -91,12 +91,12 @@ function injectLinkedInCopy(draftContent, linkedInCopy) {
     draftContent.slice(fmEnd);
 }
 
-// Run a git command inside the dotcom checkout
+// Run a git command inside the blog repo checkout
 function git(args) {
   return execSync(`git ${args}`, {
     encoding: 'utf8',
     stdio: ['pipe', 'pipe', 'inherit'],
-    cwd: path.resolve(DOTCOM_PATH),
+    cwd: path.resolve(BLOG_REPO_PATH),
   });
 }
 

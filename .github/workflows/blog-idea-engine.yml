@@ -19,10 +19,18 @@ jobs:
       pull-requests: write
 
     steps:
-      - name: Checkout doughatcher
+      - name: Checkout dotcom (editorial-loop code lives here)
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Checkout blog repo (content target — PRs land here)
+        uses: actions/checkout@v4
+        with:
+          repository: doughatcher/blog
+          token: ${{ secrets.BLOG_REPO_TOKEN }}
+          fetch-depth: 0
+          path: blog
 
       - name: Checkout vault backup
         uses: actions/checkout@v4
@@ -42,7 +50,8 @@ jobs:
         working-directory: apps/editorial-loop
         run: npm ci
 
-      - name: Configure git identity
+      - name: Configure git identity in blog checkout
+        working-directory: blog
         run: |
           git config user.name "editorial-loop[bot]"
           git config user.email "actions@github.com"
@@ -53,10 +62,10 @@ jobs:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           VAULT_PATH: ${{ github.workspace }}/vault
-          BLOG_PATH: ${{ github.workspace }}/content/blog
-          DOTCOM_PATH: ${{ github.workspace }}
+          BLOG_PATH: ${{ github.workspace }}/blog/content/blog
+          BLOG_REPO_PATH: ${{ github.workspace }}/blog
           INJECT_CONTEXT: ${{ inputs.inject_context }}
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.BLOG_REPO_TOKEN }}
         run: node index.js
 
       - name: Summary
@@ -65,4 +74,4 @@ jobs:
           echo "## Blog Idea Engine" >> $GITHUB_STEP_SUMMARY
           echo "Run at: $(date -u '+%Y-%m-%d %H:%M UTC')" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Check open Draft PRs → [doughatcher/dotcom pulls](https://github.com/doughatcher/dotcom/pulls)" >> $GITHUB_STEP_SUMMARY
+          echo "Check open Draft PRs → [doughatcher/blog pulls](https://github.com/doughatcher/blog/pulls)" >> $GITHUB_STEP_SUMMARY

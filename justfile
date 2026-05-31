@@ -55,8 +55,8 @@ release-download:
     #!/usr/bin/env bash
     set -euo pipefail
     mkdir -p backups
-    echo "Fetching latest release from doughatcher/dotcom..."
-    gh release download --repo doughatcher/dotcom --pattern "*.zip" --dir backups --clobber
+    echo "Fetching latest release from doughatcher/blog..."
+    gh release download --repo doughatcher/blog --pattern "*.zip" --dir backups --clobber
     echo "Downloaded to backups/:"
     ls -lh backups/*.zip | tail -5
 

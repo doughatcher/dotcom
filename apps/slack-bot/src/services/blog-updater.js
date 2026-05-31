@@ -1,5 +1,5 @@
 /**
- * Update a blog post in doughatcher/dotcom.
+ * Update a blog post in doughatcher/blog.
  *
  * Two modes:
  *   threadCtx — called from a reply in an active post thread (vibe edit).
@@ -16,7 +16,7 @@ import { createAnthropic } from '@ai-sdk/anthropic';
 import { readFile, writeFile, listDir, listPRs, readFileOnBranch, updateFileOnBranch } from './github.js';
 
 export async function updateBlogPost(intent, env, threadCtx) {
-  const repo = env.DOTCOM_REPO;
+  const repo = env.BLOG_REPO;
   const contentPath = env.BLOG_CONTENT_PATH;
   const { blogInstructions } = intent;
 
