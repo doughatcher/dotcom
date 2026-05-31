@@ -1,0 +1,14 @@
+{
+  "name": "doughatcher-social-bridge",
+  "version": "0.1.0",
+  "description": "Cloudflare Worker — classify Reddit/Facebook/archive ingest and route via Micropub to doughatcher.com or leaning.blue",
+  "main": "src/index.js",
+  "scripts": {
+    "dev": "wrangler dev --ip 0.0.0.0 --port 8791",
+    "deploy": "wrangler deploy",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "wrangler": "^4.0.0"
+  }
+}
