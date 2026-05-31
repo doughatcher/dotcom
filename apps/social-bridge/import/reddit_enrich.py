@@ -27,7 +27,8 @@ from pathlib import Path
 from typing import Optional
 
 USER_AGENT = "Mozilla/5.0 (compatible; doughatcher-archive/0.1)"
-THROTTLE_SEC = 0.8
+THROTTLE_SEC = 3.0   # old.reddit.com rate-limits aggressively past ~30 req/min
+BACKOFF_SEC = 90.0   # wait this long after a 429 before resuming
 
 # Reddit-hosted media domains. For these we still call it a "link post" so the
 # article-URL rendering kicks in, but the caller may want to treat them as
@@ -69,13 +70,16 @@ def _classify(data_url: str) -> str:
     return "link"
 
 
-def _fetch(url: str) -> Optional[str]:
+def _fetch(url: str) -> tuple[Optional[str], Optional[int]]:
+    """Returns (body, status_code). status_code is None on URL/timeout errors."""
     try:
         req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
         with urllib.request.urlopen(req, timeout=15) as resp:
-            return resp.read().decode("utf-8", errors="replace")
-    except (urllib.error.HTTPError, urllib.error.URLError, TimeoutError):
-        return None
+            return resp.read().decode("utf-8", errors="replace"), resp.status
+    except urllib.error.HTTPError as e:
+        return None, e.code
+    except (urllib.error.URLError, TimeoutError):
+        return None, None
 
 
 def fetch_submission_metadata(subreddit: str, sub_id: str, cache: SubmissionCache) -> dict:
@@ -99,12 +103,22 @@ def fetch_submission_metadata(subreddit: str, sub_id: str, cache: SubmissionCach
         return cached
 
     url = f"https://old.reddit.com/r/{subreddit}/comments/{sub_id}/"
-    body = _fetch(url)
+    body, status = _fetch(url)
+
+    # On 429, back off once and retry — Reddit's rate limit window is short.
+    if status == 429:
+        time.sleep(BACKOFF_SEC)
+        body, status = _fetch(url)
+
     if not body:
-        result = {"kind": "unknown", "external_url": None, "title": None}
-        cache.put(sub_id, result)
+        # Do NOT cache transient failures (429, 5xx, timeout) — let the next
+        # run retry. Only cache hard 404s as "unknown" so we don't pound on
+        # deleted submissions forever.
+        if status == 404:
+            result = {"kind": "unknown", "external_url": None, "title": None, "fail": "404"}
+            cache.put(sub_id, result)
         time.sleep(THROTTLE_SEC)
-        return result
+        return {"kind": "unknown", "external_url": None, "title": None}
 
     durl_match = _SUBMISSION_DATA_URL.search(body)
     data_url = durl_match.group(1) if durl_match else ""

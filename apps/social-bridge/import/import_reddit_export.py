@@ -95,23 +95,20 @@ def link_short_id(link_field: str) -> str:
 
 
 def format_comment_row(row: dict, submission_meta: dict | None = None) -> tuple[str, str, str, list[str]]:
-    """Per-comment format (2026-05-31):
+    """Per-comment format (2026-05-31 v2):
 
-    Self post (or unknown):
-        <comment body>
-        ---
-        _Originally a Reddit comment on [<title>](<comment_url>) in r/<sub>._
-
-    Link post (parent was a submission linking out to an article):
         <comment body>
 
-        <bare external article url>
+        <bare reddit comment URL>
 
-        — reads as if Doug posted the article with a short take. micro.blog's
-          link-preview Worker turns the bare URL into a card.
+    micro.blog's link-preview Worker turns the bare URL into a card with the
+    parent submission's og:image / title — so the visual presentation is the
+    Reddit post (Bernie meme, article preview, whatever) rather than a textual
+    "Originally a Reddit comment on..." footer.
 
-    `submission_meta`, when provided, comes from reddit_enrich.fetch_submission_metadata
-    and shapes the rendering. None → falls back to self-post style with no title.
+    The `submission_meta` argument is accepted for API compatibility with the
+    earlier enricher path but is no longer consulted — the link-preview Worker
+    does its own metadata lookup on render.
 
     Returns (id, content, classifier_text, categories)."""
     body = (row.get("body") or "").strip()
@@ -120,35 +117,10 @@ def format_comment_row(row: dict, submission_meta: dict | None = None) -> tuple[
     if permalink and not permalink.startswith("http"):
         permalink = f"https://www.reddit.com{permalink}"
 
-    kind = (submission_meta or {}).get("kind", "unknown")
-    title = (submission_meta or {}).get("title")
-    external_url = (submission_meta or {}).get("external_url")
-
     parts = [body]
-
-    if kind == "link" and external_url:
-        # "Doug shared the article with a take" — bare URL on its own line so
-        # the link-preview Worker renders it as a card.
+    if permalink:
         parts.append("")
-        parts.append(external_url)
-    else:
-        # Self post (or unknown/media without a clean article URL): the comment
-        # body is the value; cite the Reddit thread as the place of origin.
-        title_link = (
-            f"[{title}]({permalink})" if (title and permalink) else
-            (f"[Comment thread]({permalink})" if permalink else "")
-        )
-        sub_clause = f" in r/{sub}" if sub else ""
-        if title_link:
-            footer = f"_Originally a Reddit comment on {title_link}{sub_clause}._"
-        elif sub:
-            footer = f"_Originally a Reddit comment{sub_clause}._"
-        else:
-            footer = None
-        if footer:
-            parts.append("")
-            parts.append("---")
-            parts.append(footer)
+        parts.append(permalink)
 
     categories = ["from-reddit", "archive"]
     if sub:
@@ -158,9 +130,10 @@ def format_comment_row(row: dict, submission_meta: dict | None = None) -> tuple[
 
 def format_thread_rollup(link_id: str, rows: list[dict]) -> tuple[str, str, str, list[str]]:
     """
-    Multi-comment thread format: chronological owner comments separated by
-    a thin divider, with a single footer at the bottom linking back to the
-    thread root on Reddit. Returns (rollup_id, content, classifier_text, categories).
+    Multi-comment thread format (2026-05-31 v2): chronological owner comments
+    separated by a thin divider, then the thread URL on its own line so the
+    link-preview Worker can render the parent submission as a card.
+    Returns (rollup_id, content, classifier_text, categories).
     """
     rows = sorted(rows, key=lambda r: parse_date(r["date"]))
     sub = normalize_subreddit(rows[0].get("permalink") or rows[0].get("link") or "")
@@ -176,17 +149,10 @@ def format_thread_rollup(link_id: str, rows: list[dict]) -> tuple[str, str, str,
             lines.append("")
         lines.append(body)
 
-    # Single footer at the bottom of the rollup (no per-comment links — they'd
-    # clutter the thread read-through). Use the thread URL not individual
-    # comment permalinks.
     thread_url = normalize_thread_url(rows[0].get("link") or "")
-    if thread_url and sub:
+    if thread_url:
         lines.append("")
-        lines.append("---")
-        lines.append(
-            f"_Originally a Reddit thread in r/{sub}. "
-            f"[Discussion]({thread_url})._"
-        )
+        lines.append(thread_url)
 
     categories = ["from-reddit", "archive", "reddit-thread"]
     if sub:
@@ -280,9 +246,6 @@ def main():
     progress = Progress(Path(args.progress))
     print(f"Resuming with {len(progress.done)} already-done items")
 
-    sub_cache = SubmissionCache(HERE / ".submission-cache.json")
-    print(f"Submission cache: {len(sub_cache.data)} entries")
-
     since = datetime.fromisoformat(args.since).replace(tzinfo=timezone.utc)
     until = datetime.fromisoformat(args.until).replace(tzinfo=timezone.utc) if args.until else None
     print(f"window: {since.date()} → {until.date() if until else 'now'}")
@@ -336,6 +299,10 @@ def main():
             print(f"[DRY  ] {payload['published'][:10]}  →  {result.get('classification'):10s}  {source} {ident_local}")
         elif result.get("skipped"):
             skipped += 1
+        elif result.get("dropped"):
+            # classifier said SKIP — the Worker dropped it on purpose.
+            # Count toward "skipped" so the summary isn't misleading.
+            skipped += 1
         else:
             errors += 1
             print(f"[ERR  ] {full_id}  {result}")
@@ -363,14 +330,7 @@ def main():
             if link_short and link_short in already_rolled_up_link_shorts:
                 skipped += 1
                 continue
-            sub_id = submission_id_from_link(row.get("link") or "")
-            sub_name = (row.get("subreddit") or "").strip()
-            meta = (
-                fetch_submission_metadata(sub_name, sub_id, sub_cache)
-                if sub_id and sub_name
-                else None
-            )
-            ident, content, ctext, cats = format_comment_row(row, meta)
+            ident, content, ctext, cats = format_comment_row(row)
             send("reddit-export-comment", ident, content, ctext, cats, dt)
 
     if args.posts:

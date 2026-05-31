@@ -134,18 +134,25 @@ export function parseAtomFeed(xml) {
 }
 
 /**
- * Format the markdown body that micro.blog actually publishes. The body is
- * ONLY the comment text — Reddit URLs live in the categories array as
- * machine-readable hints (kind:reddit-comment, sub:foo, etc.) so the
- * site template can render a "Reply on /r/foo to <title>" footer.
+ * Format the markdown body that micro.blog actually publishes.
+ *
+ *   <comment text>
+ *
+ *   <bare reddit comment URL>
+ *
+ * The link-preview Worker (doughatcher/link-preview-service) turns the bare
+ * URL into a card with the parent submission's og:image and title — so the
+ * visual presentation is the original Reddit post (image, article preview,
+ * whatever the parent submission points at) rather than a textual footer.
+ *
+ * Other args (subreddit, submissionTitle, submissionPermalink) are kept on
+ * the signature for callers that may want them later, but only commentText
+ * and commentPermalink are currently used.
  */
-export function formatBody({ commentText, subreddit, submissionTitle, submissionPermalink, commentPermalink }) {
+export function formatBody({ commentText, commentPermalink }) {
   const trimmed = (commentText || "").trim();
-  const footer =
-    `\n\n---\n` +
-    `_Originally a Reddit comment on [${submissionTitle}](${submissionPermalink}) in r/${subreddit}. ` +
-    `[Comment thread](${commentPermalink})._`;
-  return trimmed + footer;
+  if (!commentPermalink) return trimmed;
+  return `${trimmed}\n\n${commentPermalink}`;
 }
 
 /**
