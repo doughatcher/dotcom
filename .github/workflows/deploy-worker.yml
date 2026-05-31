@@ -51,7 +51,7 @@ jobs:
         run: |
           mkdir -p /tmp/content-scan
           # Try to download the latest backup release ZIP
-          gh release download --repo doughatcher/dotcom --pattern "*.zip" \
+          gh release download --repo doughatcher/blog --pattern "*.zip" \
             --dir /tmp/backup --clobber 2>/dev/null || true
           ZIP=$(ls /tmp/backup/*.zip 2>/dev/null | head -1)
           if [ -n "$ZIP" ]; then

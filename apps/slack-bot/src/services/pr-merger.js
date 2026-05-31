@@ -9,7 +9,7 @@ import { listPRs, mergePR } from './github.js';
 
 export async function mergeBlogPost(intent, env) {
   const { blogSlug } = intent;
-  const repo = env.DOTCOM_REPO;
+  const repo = env.BLOG_REPO;
 
   const prs = await listPRs(repo, env.GITHUB_TOKEN, 'blog/');
 

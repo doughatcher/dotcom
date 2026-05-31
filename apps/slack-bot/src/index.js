@@ -245,7 +245,7 @@ async function resolveNumberedIdea(text, env) {
   const n = parseInt(m[1], 10);
   if (n < 1 || n > 10) return null;
 
-  const batch = await getLatestIdeaBatch(env.DOTCOM_REPO, env.GITHUB_TOKEN);
+  const batch = await getLatestIdeaBatch(env.BLOG_REPO, env.GITHUB_TOKEN);
   if (batch.length === 0 || n > batch.length) return null;
 
   const pr = batch[n - 1];
