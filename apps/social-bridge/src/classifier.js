@@ -20,22 +20,32 @@ const SYSTEM_PROMPT = `You classify a single short social-media post (a Reddit c
 
 THE SKIP LABEL TAKES PRECEDENCE over the other two.
 
-SKIP applies regardless of topic when:
-- The post is a cheap dunk, snark, or one-liner without an underlying argument ("stay classy, Vanilla", "lol ok bud", "cope harder")
-- The post is an ad hominem or personal attack without substantive critique
-- The post reads as a tantrum, rant, or "hot under the collar" — emotional venting without a reasoned point
-- The post makes a demonstrably wrong factual claim that would embarrass Doug-in-2026
-- The post is so short or contextless it conveys nothing meaningful on its own (one-word reactions, "this", "+1", emoji-only)
-- Doug-in-2026 (an enterprise architect building a public professional + personal brand) would cringe at this being publicly attributed to him
+A post is SKIP only when BOTH conditions hold:
+  (1) it does NOT contain a substantive opinion, argument, factual claim, recommendation, observation, or experience that stands on its own without knowing what it's replying to;
+  AND
+  (2) it falls into one of these categories:
+    - cheap dunk, snark, or one-liner with no underlying reasoning ("stay classy, Vanilla", "lol ok bud", "cope harder", "you don't say")
+    - ad hominem or personal attack without substantive critique
+    - tantrum or rant — emotional venting with no reasoned point
+    - demonstrably wrong factual claim that would embarrass Doug-in-2026
+    - one-word reaction, "this", "+1", emoji-only, banter that requires external context to mean anything
+    - partisan one-liner with no argument or evidence ("But Hillary's emails!", "Republicans just can't get anything right")
+
+DO NOT mark as SKIP if the post contains ANY of:
+  - A technical recommendation, opinion, or instruction (even brief — "Use Fedora on the M1 Pro for Magento" qualifies)
+  - Local knowledge or advice ("Stick to Market Commons in Charleston, you'll feel like a yuppie")
+  - A substantive workplace, relationship, or life observation ("You half-heartedly help, don't do much to save her from herself" — that's real advice)
+  - A thoughtful argument or take, even if brief, where the reasoning is intelligible on its own
+  - Topic-specific expertise, product reviews, or genuine recommendations
 
 If SKIP does not apply, classify the remaining content:
 
 POLITICAL covers: electoral politics, partisan policy debate, opinions on politicians/parties/candidates, government actions framed partisanly, civic activism, voting, abortion/guns/immigration/climate as policy issues, current events with a clear partisan slant.
 
-PERSONAL covers: tech work, software/engineering, hobbies, family, sports, entertainment, jokes (that have a point), neutral news links, and any current event WITHOUT a partisan opinion.
+PERSONAL covers: tech work, software/engineering, hobbies, family, sports, entertainment, jokes that have a point, neutral news links, life advice, local knowledge, product reviews, and any current event WITHOUT a partisan opinion.
 
 When in doubt between POLITICAL and PERSONAL, lean PERSONAL.
-When in doubt between SKIP and a real label, lean SKIP — keep the bar high for public attribution.
+When in doubt between SKIP and a substantive label, lean toward the substantive label — only SKIP what's genuinely contextless or cringe.
 
 Respond with exactly one word: POLITICAL, PERSONAL, or SKIP.`;
 

@@ -43,6 +43,7 @@ from pathlib import Path
 HERE = Path(__file__).parent
 sys.path.insert(0, str(HERE))
 from _bridge import Progress, post_historical, sleep_between  # noqa: E402
+from reddit_enrich import SubmissionCache, fetch_submission_metadata, submission_id_from_link  # noqa: E402
 
 
 def parse_date(s: str) -> datetime:
@@ -93,15 +94,24 @@ def link_short_id(link_field: str) -> str:
     return link_field  # fallback — caller still gets a stable string
 
 
-def format_comment_row(row: dict) -> tuple[str, str, str, list[str]]:
-    """Per-comment format (2026-05-31): comment body, then a horizontal-rule
-    divider, then an italicized footer linking back to Reddit. Matches the
-    format the live Reddit RSS poller emits, so all sites render uniformly.
+def format_comment_row(row: dict, submission_meta: dict | None = None) -> tuple[str, str, str, list[str]]:
+    """Per-comment format (2026-05-31):
 
-    The GDPR export does not carry submission titles, so the footer says
-    'in r/<sub>' without the parent title — RSS-imported posts will read
-    'on [<title>](<sub_url>) in r/<sub>'. A future enrichment pass
-    (Wayback / Reddit OAuth) can fill submission titles in place.
+    Self post (or unknown):
+        <comment body>
+        ---
+        _Originally a Reddit comment on [<title>](<comment_url>) in r/<sub>._
+
+    Link post (parent was a submission linking out to an article):
+        <comment body>
+
+        <bare external article url>
+
+        — reads as if Doug posted the article with a short take. micro.blog's
+          link-preview Worker turns the bare URL into a card.
+
+    `submission_meta`, when provided, comes from reddit_enrich.fetch_submission_metadata
+    and shapes the rendering. None → falls back to self-post style with no title.
 
     Returns (id, content, classifier_text, categories)."""
     body = (row.get("body") or "").strip()
@@ -110,22 +120,35 @@ def format_comment_row(row: dict) -> tuple[str, str, str, list[str]]:
     if permalink and not permalink.startswith("http"):
         permalink = f"https://www.reddit.com{permalink}"
 
-    footer_bits = []
-    if sub and permalink:
-        footer_bits.append(
-            f"_Originally a Reddit comment in r/{sub}. "
-            f"[Comment thread]({permalink})._"
-        )
-    elif permalink:
-        footer_bits.append(f"_Originally a Reddit comment. [Comment thread]({permalink})._")
-    elif sub:
-        footer_bits.append(f"_Originally a Reddit comment in r/{sub}._")
+    kind = (submission_meta or {}).get("kind", "unknown")
+    title = (submission_meta or {}).get("title")
+    external_url = (submission_meta or {}).get("external_url")
 
     parts = [body]
-    if footer_bits:
+
+    if kind == "link" and external_url:
+        # "Doug shared the article with a take" — bare URL on its own line so
+        # the link-preview Worker renders it as a card.
         parts.append("")
-        parts.append("---")
-        parts.append(footer_bits[0])
+        parts.append(external_url)
+    else:
+        # Self post (or unknown/media without a clean article URL): the comment
+        # body is the value; cite the Reddit thread as the place of origin.
+        title_link = (
+            f"[{title}]({permalink})" if (title and permalink) else
+            (f"[Comment thread]({permalink})" if permalink else "")
+        )
+        sub_clause = f" in r/{sub}" if sub else ""
+        if title_link:
+            footer = f"_Originally a Reddit comment on {title_link}{sub_clause}._"
+        elif sub:
+            footer = f"_Originally a Reddit comment{sub_clause}._"
+        else:
+            footer = None
+        if footer:
+            parts.append("")
+            parts.append("---")
+            parts.append(footer)
 
     categories = ["from-reddit", "archive"]
     if sub:
@@ -257,6 +280,9 @@ def main():
     progress = Progress(Path(args.progress))
     print(f"Resuming with {len(progress.done)} already-done items")
 
+    sub_cache = SubmissionCache(HERE / ".submission-cache.json")
+    print(f"Submission cache: {len(sub_cache.data)} entries")
+
     since = datetime.fromisoformat(args.since).replace(tzinfo=timezone.utc)
     until = datetime.fromisoformat(args.until).replace(tzinfo=timezone.utc) if args.until else None
     print(f"window: {since.date()} → {until.date() if until else 'now'}")
@@ -337,7 +363,14 @@ def main():
             if link_short and link_short in already_rolled_up_link_shorts:
                 skipped += 1
                 continue
-            ident, content, ctext, cats = format_comment_row(row)
+            sub_id = submission_id_from_link(row.get("link") or "")
+            sub_name = (row.get("subreddit") or "").strip()
+            meta = (
+                fetch_submission_metadata(sub_name, sub_id, sub_cache)
+                if sub_id and sub_name
+                else None
+            )
+            ident, content, ctext, cats = format_comment_row(row, meta)
             send("reddit-export-comment", ident, content, ctext, cats, dt)
 
     if args.posts:
