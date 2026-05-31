@@ -1,0 +1,59 @@
+name = "doughatcher-social-bridge"
+workers_dev = true
+main = "src/index.js"
+compatibility_date = "2026-05-01"
+
+# Hourly Reddit RSS poll (unauth — Reddit RSS survived the 2023 JSON API
+# crackdown). Fetches reddit.com/user/superterran/.rss, dedupes new entries
+# against KV, classifies, and routes via the same handleHistoricalIngest
+# pipeline the GDPR backfill uses.
+[triggers]
+crons = ["7 * * * *"]   # :07 every hour, low contention with other systems
+
+[[kv_namespaces]]
+binding = "STATE"
+id = "5b2bf1a1e67043e3b64031416b479b36"
+
+[observability]
+enabled = true
+
+[vars]
+DRY_RUN = "0"
+
+# Micropub destinations — one token can post to multiple sites on the same
+# account via `mp-destination`. Verify exact URLs with:
+#   curl -H "Authorization: Bearer <token>" "https://micro.blog/micropub?q=config"
+#
+# Routing (2026-05-31, three-way):
+#   classification = SKIP      → dropped (KV marker: classified-skip)
+#   classification = POLITICAL → MICROPUB_DEST_POLITICAL    (leaning.blue)
+#   classification = PERSONAL  + subreddit ∈ PRO_SUBS
+#                              → MICROPUB_DEST_PROFESSIONAL (doughatcher.com)
+#   classification = PERSONAL  + otherwise
+#                              → MICROPUB_DEST_FALLBACK     (superterran.net)
+#
+# Classifier takes precedence over the subreddit allowlist — a partisan
+# rant in r/magento goes to leaning.blue, not doughatcher.
+MICROPUB_DEST_PROFESSIONAL = "https://hatcher.micro.blog/"     # doughatcher.com
+MICROPUB_DEST_FALLBACK     = "https://superterran.micro.blog/" # superterran.net
+MICROPUB_DEST_POLITICAL    = "https://leaningblue.micro.blog/" # leaning.blue
+
+# Tight allowlist of subreddits considered professional-enough for doughatcher.
+# Comma-separated, lowercase, no r/ prefix. Everything else falls back.
+# Adobe-champion lane: commerce + the PHP / e-commerce surrounding context.
+PRO_SUBS = "magento,magento2,adobecommerce,adobe,php,ecommerce"
+
+# Reddit RSS polling — the unauth Atom feed at reddit.com/user/<name>/.rss
+# is still served (different code path from the JSON API Reddit killed).
+# REDDIT_USERNAME identifies whose feed to poll.
+REDDIT_USERNAME = "superterran"
+REDDIT_USER_AGENT = "doughatcher-social-bridge/1.0 (Cloudflare Worker)"
+
+# Classifier. Three labels: POLITICAL | PERSONAL | SKIP. Fails open to
+# PERSONAL on API errors. Set CLASSIFIER="off" to skip the LLM call entirely
+# (everything routes to fallback; political/SKIP semantics inert).
+CLASSIFIER = "claude-haiku-4-5"
+CLASSIFIER_MODEL_ID = "claude-haiku-4-5"
+
+# Categories applied to all routed posts. Subreddit r-<sub> category is added per item.
+CATEGORIES_DEFAULT = "from-reddit,archive"

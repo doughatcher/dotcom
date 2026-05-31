@@ -28,3 +28,7 @@ node_modules/
 
 # Backups
 backups/
+
+# social-bridge import progress (local state, KV is authoritative)
+apps/social-bridge/import/.progress-*.jsonl
+apps/social-bridge/import/.submission-cache.json

@@ -1,0 +1,101 @@
+# Social Bridge — Cloudflare Worker
+# Classifies ingest payloads (Reddit from closet, Facebook from Make.com,
+# archive imports) and posts via Micropub to leaning.blue (political) or
+# doughatcher.com (everything else) via Claude Haiku 4.5.
+
+default:
+    @just --list
+
+# Install dependencies
+install:
+    npm install
+
+dev:
+    wrangler dev --ip 0.0.0.0 --port 8791
+
+deploy:
+    wrangler deploy
+
+tail:
+    wrangler tail
+
+# --- Secrets ---
+
+set-micropub-token:
+    wrangler secret put MICROPUB_TOKEN
+
+set-anthropic-key:
+    wrangler secret put ANTHROPIC_API_KEY
+
+set-trigger-token:
+    wrangler secret put TRIGGER_TOKEN
+
+# --- Smoke tests ---
+
+WORKER := "https://doughatcher-social-bridge.doug-hatcher.workers.dev"
+
+# Sanity-check auth: should return 'not found' (404), proving the token was accepted.
+ping TOKEN:
+    curl -s -o /dev/null -w "%{http_code}\n" "{{WORKER}}/?token={{TOKEN}}"
+
+# Run a fake Facebook payload through the full classify+route pipeline (dry-run).
+test-facebook TOKEN TEXT:
+    curl -s -X POST "{{WORKER}}/ingest/facebook?dry=1&token={{TOKEN}}" \
+        -H "Content-Type: application/json" \
+        -d '{"text":"{{TEXT}}","url":"https://facebook.com/test/1","id":"test-1"}' \
+        | python3 -m json.tool
+
+# Run a fake historical payload (timestamps preserved) through dry-run.
+test-historical TOKEN TEXT:
+    curl -s -X POST "{{WORKER}}/ingest/historical?dry=1&token={{TOKEN}}" \
+        -H "Content-Type: application/json" \
+        -d '{"source":"manual-test","id":"test-1","content":"{{TEXT}}","text_for_classifier":"{{TEXT}}","published":"2010-06-15T12:00:00Z"}' \
+        | python3 -m json.tool
+
+# --- Archive import (local Python scripts) ---
+# Requires: BRIDGE_TRIGGER_TOKEN env var set. Uses uv to manage deps.
+
+import-install:
+    cd import && uv venv && uv pip install -r requirements.txt
+
+# Reddit GDPR data export (https://www.reddit.com/settings/data-request, CSV format).
+backfill-reddit-export COMMENTS_CSV POSTS_CSV="":
+    cd import && uv run import_reddit_export.py --comments {{COMMENTS_CSV}} {{ if POSTS_CSV != "" { "--posts " + POSTS_CSV } else { "" } }}
+
+backfill-reddit-export-dry COMMENTS_CSV POSTS_CSV="":
+    cd import && uv run import_reddit_export.py --comments {{COMMENTS_CSV}} {{ if POSTS_CSV != "" { "--posts " + POSTS_CSV } else { "" } }} --dry-run
+
+# Facebook DYI export (https://www.facebook.com/dyi, JSON format).
+backfill-facebook DIR:
+    cd import && uv run import_facebook_export.py --dir {{DIR}}
+
+backfill-facebook-dry DIR:
+    cd import && uv run import_facebook_export.py --dir {{DIR}} --dry-run
+
+# --- Info ---
+
+info:
+    @echo "Social Bridge"
+    @echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    @echo "Worker:  doughatcher-social-bridge"
+    @echo "URL:     {{WORKER}}"
+    @echo "KV:      5b2bf1a1e67043e3b64031416b479b36"
+    @echo ""
+    @echo "Sources (Worker no longer polls — all webhook-driven):"
+    @echo "  reddit   → closet apps/reddit-poller container"
+    @echo "  facebook → Make.com automation"
+    @echo "  archive  → local Python scripts under import/"
+    @echo ""
+    @echo "Routing:"
+    @echo "  PERSONAL  → doughatcher.com"
+    @echo "  POLITICAL → leaning.blue"
+    @echo "  Classifier: Claude Haiku 4.5 (fails open to personal)"
+    @echo ""
+    @echo "Endpoints (auth: ?token=<TRIGGER_TOKEN>):"
+    @echo "  POST /ingest/facebook    → Make.com webhook"
+    @echo "  POST /ingest/historical  → closet poller + archive importers"
+    @echo ""
+    @echo "Required secrets:"
+    @echo "  MICROPUB_TOKEN     — token from micro.blog/account/apps (Micropub scope)"
+    @echo "  ANTHROPIC_API_KEY  — for the classifier"
+    @echo "  TRIGGER_TOKEN      — shared secret matched by closet poller + Make.com"
