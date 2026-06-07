@@ -1,7 +1,7 @@
 ---
 title: "The Strongest Performer on Your Team Is Your Biggest Single Point of Failure"
 date: 2026-05-18
-pillar: "Wild Card"
+pillar: "The Merchant-Side Gap"
 tags: [team-management, risk, knowledge-management, engineering-leadership]
 linkedin_copy: |
   Every engineering team has one. The person who moves fastest, holds the most context, and becomes the default router for every hard question. The person you would describe in a review as indispensable.
