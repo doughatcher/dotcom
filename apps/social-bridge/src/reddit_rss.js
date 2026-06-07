@@ -181,7 +181,11 @@ export function buildPayload(entry) {
   });
 
   return {
-    source: "reddit-rss",
+    // Unify with the GDPR-import path's source so KV idempotency dedups across
+    // both ingest surfaces — same comment posted via backfill OR live RSS gets
+    // the same key (`imported:reddit-export-comment:<id>`), so the cron can't
+    // re-post something the backfill already handled.
+    source: "reddit-export-comment",
     id: stableId,
     content: body,
     text_for_classifier: commentText,
