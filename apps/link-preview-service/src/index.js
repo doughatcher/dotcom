@@ -84,6 +84,53 @@ function isRedditFallbackImage(imageUrl) {
   }
 }
 
+// Titles Reddit serves when it is stonewalling rather than rendering the post:
+// the logged-out interstitial, the 403 "Blocked" page, and the generic site
+// titles. These are valid-looking strings, which is exactly why they used to
+// get written to KV and pinned there — every one of these is a FAILURE, not
+// metadata, and must never be cached.
+const REDDIT_WALL_TITLES = new Set([
+  'welcome to reddit',
+  'blocked',
+  'reddit',
+  'reddit - dive into anything',
+  'reddit - the heart of the internet',
+  'log in or sign up',
+]);
+
+function isWallTitle(title) {
+  if (!title) return true;
+  return REDDIT_WALL_TITLES.has(title.trim().toLowerCase());
+}
+
+// Canonical cache key. The browser sends the URL exactly as it appears in the
+// post (usually WITH a trailing slash); the warmer used to strip it, so the two
+// sides wrote and read different keys and the warmed data was never seen.
+// Both sides now go through this one rule: drop the query/fragment, drop the
+// trailing slash, and normalise old./www. to a single host.
+function normalizeUrl(url) {
+  try {
+    const u = new URL(url);
+    u.search = '';
+    u.hash = '';
+    u.hostname = u.hostname.replace(/^old\./, 'www.');
+    let s = u.toString();
+    return s.endsWith('/') ? s.slice(0, -1) : s;
+  } catch {
+    return url;
+  }
+}
+
+// Bump to invalidate the whole cache at once — old entries stay until their TTL
+// but are never read again. v2 added image_is_fallback. v3 changes the key to a
+// normalized URL and stops caching failures, so every v2 entry (many of which
+// pinned Reddit's "Welcome to Reddit" wall) is abandoned here rather than purged.
+const CACHE_VERSION = 'v3';
+
+function cacheKeyFor(url) {
+  return `preview:${CACHE_VERSION}:${normalizeUrl(url)}`;
+}
+
 async function fetchRedditMetadata(url) {
   const resolvedUrl = await resolveRedditShareUrl(url);
 
@@ -95,7 +142,7 @@ async function fetchRedditMetadata(url) {
     if (res.ok) {
       const data = await res.json();
       const post = data[0]?.data?.children?.[0]?.data;
-      if (post?.title) {
+      if (post?.title && !isWallTitle(post.title)) {
         const badThumbnails = new Set(['self', 'default', 'nsfw', 'spoiler', 'image', '']);
         const previewImg =
           post.preview?.images?.[0]?.resolutions?.slice(-1)[0]?.url?.replace(/&amp;/g, '&') ||
@@ -114,29 +161,43 @@ async function fetchRedditMetadata(url) {
     }
   } catch {}
 
-  // Fallback: Reddit JSON API is blocked from Cloudflare IPs.
-  // old.reddit.com is server-rendered and returns proper OG tags including og:image.
-  const oldUrl = resolvedUrl.replace('www.reddit.com', 'old.reddit.com');
-  const htmlMeta = await fetchHtmlMetadata(oldUrl);
-  if (htmlMeta.title) {
-    const subreddit = (() => {
-      try {
-        const parts = new URL(resolvedUrl).pathname.split('/').filter(Boolean);
-        const rIdx = parts.indexOf('r');
-        return rIdx !== -1 ? `r/${parts[rIdx + 1]}` : 'reddit.com';
-      } catch { return 'reddit.com'; }
-    })();
-    return {
-      ...htmlMeta,
-      domain: subreddit,
-      image_is_fallback: isRedditFallbackImage(htmlMeta.image),
-    };
-  }
+  const subreddit = (() => {
+    try {
+      const parts = new URL(resolvedUrl).pathname.split('/').filter(Boolean);
+      const rIdx = parts.indexOf('r');
+      return rIdx !== -1 ? `r/${parts[rIdx + 1]}` : 'reddit.com';
+    } catch { return 'reddit.com'; }
+  })();
 
-  // Last resort: title from URL slug, no image
+  // Fallback: old.reddit.com is server-rendered and returns proper OG tags.
+  // Reddit rate-limits unauthenticated scraping hard and then 403s the caller,
+  // so this is expected to fail more often than not from Worker egress. A throw
+  // or a wall title both mean "no data" — neither is allowed to reach the cache.
+  try {
+    const oldUrl = resolvedUrl.replace('www.reddit.com', 'old.reddit.com');
+    const htmlMeta = await fetchHtmlMetadata(oldUrl);
+    if (!isWallTitle(htmlMeta.title)) {
+      return {
+        ...htmlMeta,
+        domain: subreddit,
+        image_is_fallback: isRedditFallbackImage(htmlMeta.image),
+      };
+    }
+  } catch {}
+
+  // Last resort: title from the URL slug. This is derived, not fetched, so it
+  // is always available and never wrong — but it is also not the real title, so
+  // it is marked provisional and deliberately NOT cached. The scheduled warmer
+  // (which runs off-Worker, at low volume) fills in the real metadata later.
   const slugTitle = titleFromRedditSlug(resolvedUrl);
   if (!slugTitle) throw new Error('could not resolve Reddit post URL');
-  return { title: slugTitle, description: null, image: null, domain: 'reddit.com' };
+  return {
+    title: slugTitle,
+    description: null,
+    image: null,
+    domain: subreddit,
+    provisional: true,
+  };
 }
 
 // Extract OG/meta tags from HTML for non-Reddit URLs.
@@ -194,11 +255,14 @@ export default {
     }
 
     try {
-      // Check KV cache first (populated by GitHub Actions at deploy time)
+      const cacheKey = cacheKeyFor(url);
+
+      // Check KV cache first (kept warm by the scheduled warmer workflow).
+      // Legacy poisoned entries are ignored rather than served, so the cards
+      // self-heal without needing a manual purge.
       if (env?.PREVIEW_CACHE) {
-        const cacheKey = `preview:${url}`;
         const cached = await env.PREVIEW_CACHE.get(cacheKey, 'json');
-        if (cached) {
+        if (cached && !isWallTitle(cached.title)) {
           return new Response(JSON.stringify(cached), {
             status: 200,
             headers: { ...CORS_HEADERS, 'Cache-Control': 'public, max-age=86400', 'X-Cache': 'HIT' },
@@ -210,15 +274,25 @@ export default {
         ? await fetchRedditMetadata(url)
         : await fetchHtmlMetadata(url);
 
-      // Write to KV cache for future requests (TTL: 7 days)
-      if (env?.PREVIEW_CACHE && metadata.title) {
-        const cacheKey = `preview:${url}`;
-        await env.PREVIEW_CACHE.put(cacheKey, JSON.stringify(metadata), { expirationTtl: 604800 });
+      // Cache only real, verified metadata — never a wall title, never a
+      // provisional slug-derived title. Reddit post titles are immutable, so a
+      // good Reddit result is stored with NO expiry: fetched once, kept forever,
+      // and never re-requested. Other sites can change their <title>, so those
+      // keep a 7-day TTL.
+      const cacheable =
+        env?.PREVIEW_CACHE && !metadata.provisional && !isWallTitle(metadata.title);
+      if (cacheable) {
+        const opts = isRedditUrl(url) ? undefined : { expirationTtl: 604800 };
+        await env.PREVIEW_CACHE.put(cacheKey, JSON.stringify(metadata), opts);
       }
 
+      // A provisional (slug-derived) response must NOT sit in Cloudflare's edge
+      // cache for a day, or the real title wouldn't appear until long after the
+      // warmer filled KV in. Give it a short TTL so it refreshes promptly.
+      const edgeTtl = cacheable ? 86400 : 300;
       return new Response(JSON.stringify(metadata), {
         status: 200,
-        headers: { ...CORS_HEADERS, 'Cache-Control': 'public, max-age=86400' },
+        headers: { ...CORS_HEADERS, 'Cache-Control': `public, max-age=${edgeTtl}` },
       });
     } catch (err) {
       return new Response(JSON.stringify({ error: err.message, domain: getDomain(url) }), {
