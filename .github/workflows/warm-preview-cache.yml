@@ -1,0 +1,52 @@
+name: Warm Reddit preview cache
+
+# Fills the link-preview KV cache with real Reddit metadata, off the render path.
+#
+# The Worker deliberately does NOT fetch Reddit on a cache miss any more: Reddit
+# rate-limits anonymous scraping to a small per-IP budget, and serving 20 link
+# cards per pageview burned it instantly and cached the resulting "Welcome to
+# Reddit" wall. Rendering happens constantly; new posts appear every few days.
+# This job decouples the two — it fetches each URL exactly once, ever, and
+# stores it with no expiry. Until it succeeds, cards show a title derived from
+# the URL slug, which is always available and never wrong.
+#
+# Optional secrets REDDIT_CLIENT_ID / REDDIT_CLIENT_SECRET switch it to the free
+# Reddit OAuth API, which is not subject to the anonymous block. Without them it
+# falls back to scraping old.reddit.com with a wide delay between requests.
+
+on:
+  schedule:
+    - cron: "20 6 * * *" # 06:20 UTC daily
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Scan and report without writing to KV"
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: warm-preview-cache
+  cancel-in-progress: false
+
+jobs:
+  warm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Warm KV cache
+        env:
+          CLOUDFLARE_API_KEY: ${{ secrets.CLOUDFLARE_API_KEY }}
+          CLOUDFLARE_EMAIL: ${{ secrets.CLOUDFLARE_EMAIL }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ vars.CLOUDFLARE_ACCOUNT_ID }}
+          KV_NAMESPACE_ID: f48049994ef74c418fe7b8f491f6e905
+          REDDIT_CLIENT_ID: ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET: ${{ secrets.REDDIT_CLIENT_SECRET }}
+          DRY_RUN: ${{ inputs.dry_run && '1' || '' }}
+        run: python3 apps/link-preview-service/warm-cache.py
