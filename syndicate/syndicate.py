@@ -13,6 +13,7 @@ import argparse
 import json
 import os
 import sys
+import time
 from pathlib import Path
 
 import requests
@@ -37,9 +38,20 @@ def save_tracking(tracking: dict) -> None:
 
 
 def fetch_feed() -> list[dict]:
-    r = requests.get(FEED_URL, timeout=30)
-    r.raise_for_status()
-    return r.json().get("items", [])
+    last_error: requests.RequestException | None = None
+    for attempt in range(1, 4):
+        try:
+            r = requests.get(FEED_URL, timeout=30)
+            r.raise_for_status()
+            return r.json().get("items", [])
+        except requests.RequestException as e:
+            last_error = e
+            if attempt == 3:
+                break
+            wait = attempt * 10
+            print(f"  feed fetch failed ({type(e).__name__}); retrying in {wait}s")
+            time.sleep(wait)
+    raise last_error
 
 
 def main() -> int:
